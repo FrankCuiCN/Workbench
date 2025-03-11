@@ -5,7 +5,7 @@ from PySide6.QtCore import QTimer, QEvent, QThread, Qt
 from ui.text_editor.text_editor import TextEditor
 from ui.status_bar import StatusBar
 from api.worker import Worker
-from utils.text_to_messages import text_to_messages
+from utils.parse_text import parse_text
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +63,7 @@ class Session(QWidget):
         # Get current text from editor (now in read-only mode)
         current_text = self.text_editor.get_text()
         # Parse messages from text and check for syntax errors
-        messages = text_to_messages(current_text)
+        messages = parse_text(current_text)
         # If there is a syntax error then clean up and exit
         if messages is None:
             # Turn off read-only

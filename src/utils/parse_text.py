@@ -91,15 +91,12 @@ def process_text_with_image_tags(content):
     return content_blocks
 
 
-def text_to_messages(text):
+def parse_text(text):
     """
     Constructs messages and validates them
     Returns the messages if valid, otherwise None
-
-    Args:
-        text: The text content with possible embedded image tags
     """
-    logger.debug("text_to_messages called")
+    logger.debug("parse_text called")
 
     # Define patterns
     init_pattern = "Human:\n"
