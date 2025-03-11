@@ -1,5 +1,5 @@
 # Workbench
-A convenient interface for interaction with Language Models and Reasoner Models.
+A convenient interface for interacting with Language Models and Reasoner Models.
 
 ## License Information
 This project is licensed under the MIT License (see LICENSE for details).
