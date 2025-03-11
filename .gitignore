@@ -1,0 +1,18 @@
+# Ignore IDE files
+.idea
+
+# Ignore the Aider workspace
+src-aider/
+
+# Ignore notes
+notes/
+
+# Ignore logs
+*.log
+
+# Ignore environment variables
+.env
+.env.local
+
+# Ignore Python cache files
+__pycache__/
