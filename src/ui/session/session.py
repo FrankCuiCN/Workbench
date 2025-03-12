@@ -28,7 +28,7 @@ class Session(QWidget):
         self.text_editor.insertPlainText("Human:\n")
         # Add 10 lines to the end
         cursor_position = self.text_editor.textCursor().position()
-        self.text_editor.insertPlainText("\n" * 10)  # Add empty lines
+        self.text_editor.insertPlainText("\n" * 20)  # Add empty lines
         cursor = self.text_editor.textCursor()  # Get current text cursor
         cursor.setPosition(cursor_position)  # Set cursor to stored position
         self.text_editor.setTextCursor(cursor)  # Apply cursor position to editor

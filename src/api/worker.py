@@ -49,4 +49,5 @@ class Worker(QObject):
             self.signal.emit({"state": "ending", "payload": None})
             return
         except Exception as e:
+            logger.error(f"Worker exception: {e}")
             self.signal.emit({"state": "error", "payload": str(e)})
