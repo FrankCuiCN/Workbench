@@ -19,7 +19,7 @@ def parse_text(text):
     # Validate that the text starts with "Human:"
     if not anchor_indices or lines[anchor_indices[0]] != "Human:":
         # Text must start with 'Human:'
-        print("Text must start with 'Human:'")
+        logger.debug("parse_text: Text must start with 'Human:'")
         return None
     
     messages = []
@@ -48,7 +48,7 @@ def parse_text(text):
         # Check if content is empty (violates rule 3)
         if not content:
             # All content must not be empty
-            print("All content must not be empty")
+            logger.debug("parse_text: All content must not be empty")
             return None
         
         # Check if content contains image tags
@@ -89,11 +89,11 @@ def parse_text(text):
         for i in range(len(messages) - 1):
             if messages[i]["role"] == messages[i + 1]["role"]:
                 # Roles must alternate between 'user' and 'assistant'
-                print("Roles must alternate between 'user' and 'assistant'")
+                logger.debug("parse_text: Roles must alternate between 'user' and 'assistant'")
                 return None
     if messages and messages[-1]["role"] != "user":
         # Messages must end with 'user' role
-        print("Messages must end with 'user' role")
+        logger.debug("parse_text: Messages must end with 'user' role")
         return None
     
     return messages

@@ -1,7 +1,7 @@
 import logging
 from enum import Enum, auto
 from PySide6.QtWidgets import QWidget, QVBoxLayout
-from PySide6.QtCore import QTimer, QEvent, QThread, Qt
+from PySide6.QtCore import QEvent, Qt
 from ui.text_editor.text_editor import TextEditor
 from ui.status_bar import StatusBar
 from api.worker import Worker
@@ -71,11 +71,7 @@ class Session(QWidget):
             # Return to IDLE
             self.set_session_state(SessionState.IDLE)
             # Show error in red
-            self.status_bar.show_error("Syntax Error")
-            # Schedule Reset style after a wait
-            # bug: (1) did not recover the original status bar content
-            #      (2) does not ensure such task is singleton
-            QTimer.singleShot(1000, self.status_bar.reset_style)
+            self.status_bar.show_syntax_error()
             return
         # Otherwise, create a worker and start it
         else:
