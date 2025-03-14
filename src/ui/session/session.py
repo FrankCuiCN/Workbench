@@ -6,6 +6,7 @@ from ui.text_editor.text_editor import TextEditor
 from ui.status_bar import StatusBar
 from api.worker import Worker
 from utils.parse_text import parse_text
+from api.client import Client
 
 logger = logging.getLogger(__name__)
 
@@ -17,9 +18,9 @@ class SessionState(Enum):
 
 class Session(QWidget):
     """A single instance of a text editing session"""
-    def __init__(self, client=None, parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
-        self.client = client
+        self.client = Client("anthropic")
         # Set up layout
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)

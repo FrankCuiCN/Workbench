@@ -34,12 +34,20 @@ def translate_messages(system_prompt, messages):
     return translated_messages
 
 class Client:
-    def __init__(self, backend="anthropic"):
+    # The following procedures is put here in order to promote reuse and to
+    #     avoid overhead in __init__
+    # Initialize both clients
+    client_anthropic = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+    client_openai = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+    # Load system prompt from a local file
+    system_prompt_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "system_prompt.txt")
+    with open(system_prompt_path, "r", encoding="utf-8") as f:
+        system_prompt = f.read().strip()
+    logger.info(f"Loaded system prompt from {system_prompt_path}")
+    
+    def __init__(self, backend):
         # Define attributes
         self.backend = backend
-        # Initialize both clients so we can switch without additional overhead
-        self.client_anthropic = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
-        self.client_openai = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
         # Select the active client based on backend
         if self.backend == "anthropic":
             self.client = self.client_anthropic
@@ -47,11 +55,6 @@ class Client:
             self.client = self.client_openai
         else:
             raise Exception()
-        # Load system prompt from a local file
-        system_prompt_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "system_prompt.txt")
-        with open(system_prompt_path, "r", encoding="utf-8") as f:
-            self.system_prompt = f.read().strip()
-        logger.info(f"Loaded system prompt from {system_prompt_path}")
 
     def change_backend(self, backend):
         """Change the active backend to either 'anthropic' or 'openai'."""

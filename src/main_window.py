@@ -4,7 +4,6 @@ from ctypes import windll, wintypes
 from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QApplication, QSystemTrayIcon, QMenu
 from PySide6.QtCore import QTimer
 from PySide6.QtGui import QAction
-from api.client import Client
 from ui.workspace import Workspace
 from utils.app_icons import get_app_icon
 
@@ -13,8 +12,6 @@ logger = logging.getLogger(__name__)
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        # Each API client should be instantiated only once and shared across sessions
-        self.client = Client()
         # Configure window
         self.setWindowTitle("Workbench")
         self.resize(800, 600)
@@ -25,7 +22,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central_widget)
         layout = QVBoxLayout(central_widget)
         layout.setContentsMargins(0, 0, 0, 0)
-        self.workspace = Workspace(self.client)
+        self.workspace = Workspace()
         layout.addWidget(self.workspace)
         QApplication.processEvents()
         # Focus on the workspace

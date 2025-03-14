@@ -7,9 +7,8 @@ logger = logging.getLogger(__name__)
 
 class Workspace(QTabWidget):
     """Workspace for handling multiple sessions."""
-    def __init__(self, client=None):
+    def __init__(self):
         super().__init__()
-        self.client = client
         # Configuration: Enable close buttons
         self.setTabsClosable(True)
         # Configuration: Allow tabs to be reordered
@@ -27,7 +26,7 @@ class Workspace(QTabWidget):
     
     def add_new_session(self):
         """Add a new session in the workspace."""
-        session = Session(self.client, parent=self)
+        session = Session(parent=self)
         # Add the session with a sequential number
         # bug: if only one session exists and its name is session 2, this will create another session called session 2
         tab_index = self.addTab(session, f"Session {self.count() + 1}")
@@ -61,7 +60,7 @@ class Workspace(QTabWidget):
         if session:
             session.clean_up_resources()
         self.removeTab(current_index)
-        new_session = Session(self.client, parent=self)
+        new_session = Session(parent=self)
         self.insertTab(current_index, new_session, label)
         self.setCurrentIndex(current_index)
     
