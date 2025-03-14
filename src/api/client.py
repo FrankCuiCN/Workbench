@@ -23,7 +23,7 @@ def translate_messages(system_prompt, messages):
                     media_type = item["source"]["media_type"]
                     base64_data = item["source"]["data"]
                     new_content.append({
-                        "type": "image",
+                        "type": "image_url",
                         "image_url": {"url": f"data:{media_type};base64,{base64_data}"}
                     })
             translated_messages.append({"role": "user", "content": new_content})
