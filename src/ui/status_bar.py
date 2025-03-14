@@ -9,15 +9,15 @@ class StatusBar(QStatusBar):
         super().__init__(parent)
         self.setSizeGripEnabled(False)
         
-        # Create permanent widgets for status display on the right
+        # Add the label for follow mode
         self.follow_status = QLabel("")
-        # Add them to the right side of the status bar
         self.addPermanentWidget(self.follow_status)
-        self.read_only_status = QLabel("")
-        self.addPermanentWidget(self.read_only_status)
-        # Add the label for backend
+        # Add the label for api backend
         self.backend_status = QLabel("")
         self.addPermanentWidget(self.backend_status)
+        # Add the label for read-only status
+        self.read_only_status = QLabel("")
+        self.addPermanentWidget(self.read_only_status)
         # Internal state
         self.internal_state = None
         
