@@ -34,16 +34,17 @@ def translate_messages(system_prompt, messages):
     return translated_messages
 
 class Client:
-    def __init__(self, backend="openai"):
+    def __init__(self, backend="anthropic"):
         # Define attributes
         self.backend = backend
-        # Initialize client based on backend
+        # Initialize both clients so we can switch without additional overhead
+        self.client_anthropic = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+        self.client_openai = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+        # Select the active client based on backend
         if self.backend == "anthropic":
-            # Create the Anthropic client
-            self.client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+            self.client = self.client_anthropic
         elif self.backend == "openai":
-            # Create the OpenAI client
-            self.client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+            self.client = self.client_openai
         else:
             raise Exception()
         # Load system prompt from a local file
@@ -51,6 +52,17 @@ class Client:
         with open(system_prompt_path, "r", encoding="utf-8") as f:
             self.system_prompt = f.read().strip()
         logger.info(f"Loaded system prompt from {system_prompt_path}")
+
+    def change_backend(self, backend):
+        """Change the active backend to either 'anthropic' or 'openai'."""
+        self.backend = backend
+        if self.backend == "anthropic":
+            self.client = self.client_anthropic
+        elif self.backend == "openai":
+            self.client = self.client_openai
+        else:
+            raise Exception(f"Unknown backend: {self.backend}")
+        logger.info(f"Backend changed to {self.backend}")
 
     def get_stream(self, messages, thinking_enabled=True):
         logger.debug(f"Sending messages to the API server")
@@ -70,7 +82,7 @@ class Client:
         elif self.backend == "openai":
             messages = translate_messages(self.system_prompt, messages)
             stream = self.client.chat.completions.create(
-                model= "gpt-4.5-preview-2025-02-27",
+                model="gpt-4.5-preview-2025-02-27",
                 messages=messages,
                 stream=True
             )

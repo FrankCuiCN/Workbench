@@ -7,14 +7,17 @@ logger = logging.getLogger(__name__)
 class Worker(QObject):
     # Unified signal for all worker events
     signal = Signal(dict)
-    def __init__(self, client, messages, thinking_enabled=True, backend="openai"):
+    def __init__(self, client, messages, thinking_enabled=True):
         super().__init__()
         # Initialize attributes
         self.client = client
         self.messages = messages
         self.thinking_enabled = thinking_enabled
-        self.backend = backend  # debug: backend should only be defined in cliend.py
         self.stop_requested = False
+        # debug: a bit convoluted
+        # Preferably, the client should provide a unified interface
+        #     so that worker does not need to care about the backend
+        self.backend = client.backend
 
     def start(self):
         thread = threading.Thread(target=self._background_task)

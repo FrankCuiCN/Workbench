@@ -15,6 +15,9 @@ class StatusBar(QStatusBar):
         self.addPermanentWidget(self.follow_status)
         self.read_only_status = QLabel("")
         self.addPermanentWidget(self.read_only_status)
+        # Add the label for backend
+        self.backend_status = QLabel("")
+        self.addPermanentWidget(self.backend_status)
         # Internal state
         self.internal_state = None
         
@@ -52,3 +55,12 @@ class StatusBar(QStatusBar):
             self.setStyleSheet("")
             self.showMessage(self.internal_state)
         QTimer.singleShot(1000, _callback)
+
+    def update_backend_status(self, backend):
+        """Update the backend status label."""
+        if backend == "anthropic":
+            self.backend_status.setText("Backend: Anthropic (F10)")
+        elif backend == "openai":
+            self.backend_status.setText("Backend: OpenAI (F10)")
+        else:
+            self.backend_status.setText(f"Backend: {backend} (F10)")

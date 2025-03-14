@@ -4,6 +4,9 @@
 # Ignore the Aider workspace
 src-aider/
 
+# Ignore Aider related files
+.aider*
+
 # Ignore notes
 notes/
 

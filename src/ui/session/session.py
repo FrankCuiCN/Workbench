@@ -45,6 +45,7 @@ class Session(QWidget):
         self.status_bar.update_session_status(self.session_state.name.lower())
         self.status_bar.update_following_status(self.text_editor.follow_mode)
         self.status_bar.update_read_only_status(self.text_editor.isReadOnly())
+        self.status_bar.update_backend_status(self.client.backend)
         layout.addWidget(self.status_bar)
         # Workaround for scrolling past the last line
         #     New attribute required to store trailing newline count
@@ -159,6 +160,9 @@ class Session(QWidget):
             elif (not mods) and (key == Qt.Key_F9):
                 self.key_press_f9()
                 return True
+            elif (not mods) and (key == Qt.Key_F10):
+                self.key_press_f10()
+                return True
         return super().eventFilter(source, event)
     
     def key_press_ctrl_enter(self):
@@ -191,3 +195,11 @@ class Session(QWidget):
     def key_press_f9(self):
         self.text_editor.set_follow_mode(not self.text_editor.follow_mode)
         self.status_bar.update_following_status(self.text_editor.follow_mode)
+
+    def key_press_f10(self):
+        current_backend = self.client.backend
+        if current_backend == "anthropic":
+            self.client.change_backend("openai")
+        else:
+            self.client.change_backend("anthropic")
+        self.status_bar.update_backend_status(self.client.backend)
