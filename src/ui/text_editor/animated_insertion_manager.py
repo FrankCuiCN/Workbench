@@ -91,7 +91,7 @@ class AnimatedInsertionManager:
                 cursor.movePosition(QTextCursor.PreviousCharacter, QTextCursor.MoveAnchor, self.insertion_offset)
             # Insert the character at the current cursor position.
             cursor.insertText(char)
-            # For follow mode, update the text cursor and ensure the inserted character is visible.
+            # If follow mode is enabled, update the text cursor and keep it visible.
             if self.text_editor.follow_mode:
                 self.text_editor.setTextCursor(cursor)
                 self.text_editor.ensureCursorVisible()
@@ -100,9 +100,8 @@ class AnimatedInsertionManager:
             # Calculate the number of remaining characters in the current text chunk.
             remaining_in_current = len(self.current_text) - self.current_index
             # Update the total pending characters by summing remaining characters and the lengths of queued texts.
-            self.total_pending_chars = remaining_in_current + sum(
-                len(t) for t in self.queue)
-            # Determine the delay for the next character insertion based on the total pending characters.
+            self.total_pending_chars = remaining_in_current + sum(len(t) for t in self.queue)
+            # Adjust speed based on how many characters are left in total.
             if self.total_pending_chars < 25:
                 speed = 16
             elif self.total_pending_chars < 50:
@@ -120,28 +119,12 @@ class AnimatedInsertionManager:
             self.current_text = None
             self._process_animation()
     
-    def insert_at_end(self, text):
-        """
-        Queue new text for animated insertion at the end of the text editor.
-
-        This method performs the following:
-        1. If no animation is in progress, it calculates the insertion offset by counting
-           trailing newline characters in the current document content.
-        2. Increases the total pending characters count by the length of the new text.
-        3. Appends the new text to the animation queue.
-        4. Starts the animation if it is not already running.
-        """
-        # If no animation is currently running, calculate the trailing newline characters
-        # present at the end of the current document.
+    def insert_at_end(self, text, number_of_trailing_newline_characters=0):
+        """Queue new text for animated insertion at the end of the text editor."""
+        # If no animation is currently running
         if not self.is_animating:
-            current_text = self.text_editor.toPlainText()
-            trailing_newlines = 0
-            index = len(current_text) - 1
-            while index >= 0 and current_text[index] == "\n":
-                trailing_newlines += 1
-                index -= 1
             if self.ignore_trailing_newline:
-                self.insertion_offset = trailing_newlines
+                self.insertion_offset = number_of_trailing_newline_characters
             else:
                 self.insertion_offset = 0
         # Increase the counter for total pending characters by the length of the new text.

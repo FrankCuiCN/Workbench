@@ -20,6 +20,7 @@ def setup_logging():
     # Set logging levels for different modules
     logging.getLogger('PySide6').setLevel(logging.WARNING)
     logging.getLogger('anthropic').setLevel(logging.WARNING)
+    logging.getLogger('openai').setLevel(logging.WARNING)
     logging.getLogger('httpcore').setLevel(logging.WARNING)
     logging.getLogger('httpx').setLevel(logging.WARNING)
 

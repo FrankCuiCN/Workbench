@@ -1,14 +1,51 @@
 import os
 import logging
 import anthropic
+from openai import OpenAI
 
 # Set up logging
 logger = logging.getLogger(__name__)
 
+def translate_messages(system_prompt, messages):
+    """Translate from Anthropic to OpenAI format"""
+    # Step 1: Add system prompt as a developer message
+    translated_messages = [{"role": "developer", "content": system_prompt}]
+    
+    # Step 2: Process each original message
+    for message in messages:
+        if message["role"] == "user" and isinstance(message["content"], list):
+            # Case 3: User message with mixed content (text and images)
+            new_content = []
+            for item in message["content"]:
+                if item["type"] == "text":
+                    new_content.append(item)
+                elif item["type"] == "image":
+                    media_type = item["source"]["media_type"]
+                    base64_data = item["source"]["data"]
+                    new_content.append({
+                        "type": "image",
+                        "image_url": {"url": f"data:{media_type};base64,{base64_data}"}
+                    })
+            translated_messages.append({"role": "user", "content": new_content})
+        else:
+            # Case 1 & 2: Simple user or assistant messages
+            translated_messages.append(message)
+    
+    return translated_messages
+
 class Client:
-    def __init__(self):
-        # Create the anthropic client
-        self.client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+    def __init__(self, backend="openai"):
+        # Define attributes
+        self.backend = backend
+        # Initialize client based on backend
+        if self.backend == "anthropic":
+            # Create the Anthropic client
+            self.client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+        elif self.backend == "openai":
+            # Create the OpenAI client
+            self.client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+        else:
+            raise Exception()
         # Load system prompt from a local file
         system_prompt_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "system_prompt.txt")
         with open(system_prompt_path, "r", encoding="utf-8") as f:
@@ -17,14 +54,26 @@ class Client:
 
     def get_stream(self, messages, thinking_enabled=True):
         logger.debug(f"Sending messages to the API server")
-        # Configure thinking parameter based on thinking_enabled setting
-        thinking_param = {"type": "enabled", "budget_tokens": 32000} if thinking_enabled else {"type": "disabled"}
-        # Construct and return the stream object
-        return self.client.messages.stream(
-            system=self.system_prompt,
-            messages=messages,
-            model="claude-3-7-sonnet-20250219",
-            temperature=1.0,
-            max_tokens=64000,
-            thinking=thinking_param
-        )
+        if self.backend == "anthropic":
+            # Configure thinking parameter based on thinking_enabled setting
+            thinking_param = {"type": "enabled", "budget_tokens": 32000} if thinking_enabled else {"type": "disabled"}
+            # Construct and return the stream object
+            stream = self.client.messages.stream(
+                system=self.system_prompt,
+                messages=messages,
+                model="claude-3-7-sonnet-20250219",
+                temperature=1.0,
+                max_tokens=64000,
+                thinking=thinking_param
+            )
+            return stream
+        elif self.backend == "openai":
+            messages = translate_messages(self.system_prompt, messages)
+            stream = self.client.chat.completions.create(
+                model= "gpt-4.5-preview-2025-02-27",
+                messages=messages,
+                stream=True
+            )
+            return stream
+        else:
+            raise Exception()

@@ -46,6 +46,9 @@ class Session(QWidget):
         self.status_bar.update_following_status(self.text_editor.follow_mode)
         self.status_bar.update_read_only_status(self.text_editor.isReadOnly())
         layout.addWidget(self.status_bar)
+        # Workaround for scrolling past the last line
+        #     New attribute required to store trailing newline count
+        self.number_of_trailing_newline_characters = 0
 
     def set_session_state(self, state):
         """Update the session state"""
@@ -75,6 +78,14 @@ class Session(QWidget):
             return
         # Otherwise, create a worker and start it
         else:
+            # Workaround for scrolling beyond the last line:
+            #     Calculate and update "num_of_trailing_newline_characters"
+            trailing_newlines = 0
+            index = len(current_text) - 1
+            while index >= 0 and current_text[index] == "\n":
+                trailing_newlines += 1
+                index -= 1
+            self.number_of_trailing_newline_characters = trailing_newlines
             # Create a worker
             self.worker = Worker(self.client, messages, thinking_enabled)
             # Connect the signal
@@ -96,13 +107,13 @@ class Session(QWidget):
         elif state == "generating":
             # If first transitioning to GENERATING
             if self.session_state != SessionState.GENERATING:
-                self.text_editor.insert_at_end("\nAgent:\n")
+                self.text_editor.insert_at_end("\nAgent:\n", self.number_of_trailing_newline_characters)
                 self.set_session_state(SessionState.GENERATING)
-            self.text_editor.insert_at_end(payload)
+            self.text_editor.insert_at_end(payload, self.number_of_trailing_newline_characters)
         # If the worker is ending gracefully
         elif state == "ending":
             self.worker = None
-            self.text_editor.insert_at_end("\nHuman:\n")
+            self.text_editor.insert_at_end("\nHuman:\n", self.number_of_trailing_newline_characters)
             # Flush the text animation, and then reset UI state
             def _callback():
                 self.set_read_only(False)
@@ -170,7 +181,7 @@ class Session(QWidget):
                 self.worker.request_stop()
                 # If already generating, add the human tag
                 if self.session_state == SessionState.GENERATING:
-                    self.text_editor.insert_at_end("\nHuman:\n")
+                    self.text_editor.insert_at_end("\nHuman:\n", self.number_of_trailing_newline_characters)
                 # Flush the text animation, and then reset UI state
                 def _callback():
                     self.set_read_only(False)

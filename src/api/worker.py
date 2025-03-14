@@ -7,12 +7,13 @@ logger = logging.getLogger(__name__)
 class Worker(QObject):
     # Unified signal for all worker events
     signal = Signal(dict)
-    def __init__(self, client, messages, thinking_enabled=True):
+    def __init__(self, client, messages, thinking_enabled=True, backend="openai"):
         super().__init__()
         # Initialize attributes
         self.client = client
         self.messages = messages
         self.thinking_enabled = thinking_enabled
+        self.backend = backend  # debug: backend should only be defined in cliend.py
         self.stop_requested = False
 
     def start(self):
@@ -35,17 +36,24 @@ class Worker(QObject):
                         logger.debug("The task is halting")
                         # End the background task
                         return
-                    # If thinking related
-                    condition_1 = (event.type == "content_block_start" and hasattr(event, 'content_block') and event.content_block.type in ("thinking", "redacted_thinking"))
-                    condition_2 = (event.type == "content_block_delta" and hasattr(event, 'delta') and event.delta.type == "thinking_delta")
-                    condition_3 = (event.type == "content_block_stop" and hasattr(event, 'content_block') and event.content_block.type in ("thinking", "redacted_thinking"))
-                    if condition_1 or condition_2 or condition_3:
-                        self.signal.emit({"state": "thinking", "payload": None})
-                    # If not thinking related
-                    else:
-                        # For text deltas, emit generating state with text content
-                        if (event.type == "content_block_delta") and (event.delta.type == "text_delta"):
-                            self.signal.emit({"state": "generating", "payload": event.delta.text})
+                    # If backend is Anthropic
+                    if self.backend == "anthropic":
+                        # If thinking related
+                        condition_1 = (event.type == "content_block_start" and hasattr(event, 'content_block') and event.content_block.type in ("thinking", "redacted_thinking"))
+                        condition_2 = (event.type == "content_block_delta" and hasattr(event, 'delta') and event.delta.type == "thinking_delta")
+                        condition_3 = (event.type == "content_block_stop" and hasattr(event, 'content_block') and event.content_block.type in ("thinking", "redacted_thinking"))
+                        if condition_1 or condition_2 or condition_3:
+                            self.signal.emit({"state": "thinking", "payload": None})
+                        # If not thinking related
+                        else:
+                            # For text deltas, emit generating state with text content
+                            if (event.type == "content_block_delta") and (event.delta.type == "text_delta"):
+                                self.signal.emit({"state": "generating", "payload": event.delta.text})
+                    # Else, if backend is OpenAI
+                    elif self.backend == "openai":
+                        delta = event.choices[0].delta.content
+                        if delta is not None:
+                            self.signal.emit({"state": "generating", "payload": delta})
             self.signal.emit({"state": "ending", "payload": None})
             return
         except Exception as e:

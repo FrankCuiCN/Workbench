@@ -110,8 +110,8 @@ class TextEditor(QTextEdit):
         base64_data = base64.b64encode(byte_array.data()).decode('utf-8')
         return base64_data
 
-    def insert_at_end(self, text):
-        self.animation_manager.insert_at_end(text)
+    def insert_at_end(self, text, number_of_trailing_newline_characters=0):
+        self.animation_manager.insert_at_end(text, number_of_trailing_newline_characters)
 
     def flush_animation(self, callback: Callable):
         # Workaround: The current implementation is based on polling (every 10 ms)
