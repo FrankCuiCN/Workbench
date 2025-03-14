@@ -1,7 +1,7 @@
 # Workbench
 A convenient interface for interacting with Language Models and Reasoner Models.
 
-## API Requirements
+## Requirements
 Ensure you have valid API keys set in your environment for the following services:
 - Anthropic (`ANTHROPIC_API_KEY`)
 - OpenAI (`OPENAI_API_KEY`)
