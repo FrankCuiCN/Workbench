@@ -1,10 +1,14 @@
+# Set up proper file paths before any other imports
 import os
-
-# Workaround: "Win11-Open with-Python" changes the cwd to "C:\WINDOWS\system32"
-if os.getcwd() != os.path.dirname(os.path.abspath(__file__)):
-    raise RuntimeError(f"Invalid working directory. Expected: {os.path.dirname(os.path.abspath(__file__))}, Actual: {os.getcwd()}")
-
 import sys
+# Detect if app is packaged by PyInstaller, then obtain the base directory
+if getattr(sys, "frozen", False):
+    BASE_DIR = os.path.dirname(sys.executable)
+else:
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+# Setting CWD to BASE_DIR; Reason: CWD is not necessarily where the file is
+os.chdir(BASE_DIR)
+# Import other dependencies
 import logging
 from PySide6.QtWidgets import QApplication
 from main_window import MainWindow
@@ -14,15 +18,18 @@ def setup_logging():
     """Configure logging for the application"""
     logging.basicConfig(
         level=logging.DEBUG,
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        handlers=[logging.StreamHandler(), logging.FileHandler('app.log')]
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        handlers=[
+            logging.StreamHandler(),
+            logging.FileHandler(os.path.join(BASE_DIR, "app.log"))
+        ]
     )
-    # Set logging levels for different modules
-    logging.getLogger('PySide6').setLevel(logging.WARNING)
-    logging.getLogger('anthropic').setLevel(logging.WARNING)
-    logging.getLogger('openai').setLevel(logging.WARNING)
-    logging.getLogger('httpcore').setLevel(logging.WARNING)
-    logging.getLogger('httpx').setLevel(logging.WARNING)
+    # Set logger levels for different modules
+    # logging.getLogger("PySide6").setLevel(logging.WARNING)
+    # logging.getLogger("httpcore").setLevel(logging.WARNING)
+    # logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("anthropic").setLevel(logging.WARNING)
+    logging.getLogger("openai").setLevel(logging.WARNING)
 
 
 def main():
