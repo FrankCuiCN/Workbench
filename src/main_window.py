@@ -61,10 +61,10 @@ class MainWindow(QMainWindow):
     def show_window(self):
         """Show window"""
         def _show_window():
-            self.showNormal()
-            self.activateWindow()
-            self.raise_()
-            self.is_in_tray = False
+            self.showNormal()  # Restore the window
+            self.raise_()  # Bring it to the front
+            self.activateWindow()  # Give it keyboard focus
+            self.is_in_tray = False  # Update the tracking variable
         if self.is_in_tray:
             logger.debug("Show window: already in tray, will show window")
             _show_window()
