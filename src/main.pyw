@@ -1,13 +1,14 @@
-# Set up proper file paths before any other imports
+# Obtain BASE_DIR before any other imports
+# Note: (1) BASE_DIR must be respected throughout the codebase;
+#     (2) CWD is not necessarily the directory containing the running file;
+#     (3) Changing the CWD dynamically is not recommended
 import os
 import sys
-# Detect if app is packaged by PyInstaller, then obtain the base directory
+# Check if the app is packaged by PyInstaller
 if getattr(sys, "frozen", False):
-    BASE_DIR = os.path.dirname(sys.executable)
+    BASE_DIR = os.path.dirname(os.path.abspath(sys.executable))
 else:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-# Setting CWD to BASE_DIR; Reason: CWD is not necessarily where the file is
-os.chdir(BASE_DIR)
 # Import other dependencies
 import logging
 from PySide6.QtWidgets import QApplication
