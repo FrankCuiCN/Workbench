@@ -2,7 +2,7 @@ import logging
 import win32con
 from ctypes import windll, wintypes
 from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QApplication, QSystemTrayIcon, QMenu
-from PySide6.QtCore import QTimer
+from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QAction
 from ui.workspace import Workspace
 from utils.app_icons import get_app_icon
@@ -61,10 +61,10 @@ class MainWindow(QMainWindow):
     def show_window(self):
         """Show window"""
         def _show_window():
-            self.showNormal()  # Restore the window
-            self.raise_()  # Bring it to the front
-            self.activateWindow()  # Give it keyboard focus
-            self.is_in_tray = False  # Update the tracking variable
+            self.setWindowState(self.windowState() & ~Qt.WindowMinimized)
+            self.show()
+            self.activateWindow()
+            self.is_in_tray = False
         if self.is_in_tray:
             logger.debug("Show window: already in tray, will show window")
             _show_window()
