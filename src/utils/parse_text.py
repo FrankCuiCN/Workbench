@@ -12,14 +12,14 @@ def parse_text(text):
     # Split the text into lines
     lines = text.split("\n")
     
-    # Identify anchor indices where lines are exactly "Human:" or "Agent:"
+    # Identify anchor indices where lines are exactly "User:" or "Assistant:"
     anchor_indices = [i for i, line in enumerate(lines) if
-                      line == "Human:" or line == "Agent:"]
+                      line == "User:" or line == "Assistant:"]
     
-    # Validate that the text starts with "Human:"
-    if not anchor_indices or lines[anchor_indices[0]] != "Human:":
-        # Text must start with 'Human:'
-        logger.debug("parse_text: Text must start with 'Human:'")
+    # Validate that the text starts with "User:"
+    if not anchor_indices or lines[anchor_indices[0]] != "User:":
+        # Text must start with "User:"
+        logger.debug("parse_text: Text must start with 'User:'")
         return None
     
     messages = []
@@ -29,9 +29,9 @@ def parse_text(text):
         anchor_line = lines[anchor_indices[j]]
         
         # Determine the role based on the anchor
-        if anchor_line == "Human:":
+        if anchor_line == "User:":
             role = "user"
-        elif anchor_line == "Agent:":
+        elif anchor_line == "Assistant:":
             role = "assistant"
         else:
             raise Exception("Unexpected error")

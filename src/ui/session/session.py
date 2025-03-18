@@ -26,7 +26,7 @@ class Session(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         # Create text editor
         self.text_editor = TextEditor(self)
-        self.text_editor.insertPlainText("Human:\n")
+        self.text_editor.insertPlainText("User:\n")
         # Add 10 lines to the end
         cursor_position = self.text_editor.textCursor().position()
         self.text_editor.insertPlainText("\n" * 20)  # Add empty lines
@@ -109,13 +109,13 @@ class Session(QWidget):
         elif state == "generating":
             # If first transitioning to GENERATING
             if self.session_state != SessionState.GENERATING:
-                self.text_editor.insert_at_end("\nAgent:\n", self.number_of_trailing_newline_characters)
+                self.text_editor.insert_at_end("\nAssistant:\n", self.number_of_trailing_newline_characters)
                 self.set_session_state(SessionState.GENERATING)
             self.text_editor.insert_at_end(payload, self.number_of_trailing_newline_characters)
         # If the worker is ending gracefully
         elif state == "ending":
             self.worker = None
-            self.text_editor.insert_at_end("\nHuman:\n", self.number_of_trailing_newline_characters)
+            self.text_editor.insert_at_end("\nUser:\n", self.number_of_trailing_newline_characters)
             # Flush the text animation, and then reset UI state
             def _callback():
                 self.set_read_only(False)
@@ -184,9 +184,9 @@ class Session(QWidget):
             if self.worker:
                 logger.debug("Escape key pressed, halting the worker")
                 self.worker.request_stop()
-                # If already generating, add the human tag
+                # If already generating, add the User tag
                 if self.session_state == SessionState.GENERATING:
-                    self.text_editor.insert_at_end("\nHuman:\n", self.number_of_trailing_newline_characters)
+                    self.text_editor.insert_at_end("\nUser:\n", self.number_of_trailing_newline_characters)
                 # Flush the text animation, and then reset UI state
                 def _callback():
                     self.set_read_only(False)

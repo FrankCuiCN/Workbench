@@ -4,14 +4,14 @@
 # Ignore Python cache folders
 __pycache__/
 
+# Ignore documents
+documents/
+
 # Ignore alternative workspaces
 src-*/
 
 # Ignore standalone scripts
 standalone/
-
-# Ignore notes
-notes/
 
 # Ignore environment variables
 .env
