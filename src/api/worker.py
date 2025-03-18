@@ -25,6 +25,7 @@ class Worker(QObject):
         thread.start()
 
     def request_stop(self):
+        logger.debug("The task is requested to stop")
         self.stop_requested = True
 
     def _background_task(self):

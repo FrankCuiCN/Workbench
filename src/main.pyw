@@ -11,24 +11,32 @@ else:
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # Import other dependencies
 import logging
+from logging.handlers import RotatingFileHandler
 from PySide6.QtWidgets import QApplication
 from main_window import MainWindow
 
 
 def setup_logging():
-    """Configure logging for the application"""
+    log_dir = os.path.join(BASE_DIR, "logs")
+    # Check if log directory exists, if not, create it
+    os.makedirs(log_dir, exist_ok=True)
+    # Configure logging
     logging.basicConfig(
         level=logging.DEBUG,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         handlers=[
             logging.StreamHandler(),
-            logging.FileHandler(os.path.join(BASE_DIR, "app.log"))
+            RotatingFileHandler(
+                os.path.join(log_dir, "app.log"),
+                maxBytes=5 * 1024 * 1024,
+                backupCount=5
+            )
         ]
     )
     # Set logger levels for different modules
-    # logging.getLogger("PySide6").setLevel(logging.WARNING)
-    # logging.getLogger("httpcore").setLevel(logging.WARNING)
-    # logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("PySide6").setLevel(logging.WARNING)
+    logging.getLogger("httpcore").setLevel(logging.WARNING)
+    logging.getLogger("httpx").setLevel(logging.WARNING)
     logging.getLogger("anthropic").setLevel(logging.WARNING)
     logging.getLogger("openai").setLevel(logging.WARNING)
 
