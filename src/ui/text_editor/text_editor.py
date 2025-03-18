@@ -3,7 +3,7 @@ import uuid
 import logging
 from typing import Callable
 from PySide6.QtWidgets import QTextEdit
-from PySide6.QtCore import QUrl, QByteArray, QBuffer, QTimer
+from PySide6.QtCore import Qt, QUrl, QByteArray, QBuffer, QTimer
 from PySide6.QtGui import QFont, QImage, QTextDocument, QTextImageFormat
 from ui.text_editor.syntax_highlighter import SyntaxHighlighter
 from ui.text_editor.animated_insertion_manager import AnimatedInsertionManager
@@ -16,6 +16,8 @@ class TextEditor(QTextEdit):
         super().__init__(parent)
         # Disable rich text support, per the requirements
         self.setAcceptRichText(False)
+        # Always show the vertical scrollbar
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         # Set custom font
         font = QFont("Sarasa Mono SC", 12)
         # Disable ligatures

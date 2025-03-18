@@ -124,6 +124,7 @@ class Session(QWidget):
         # If the worker experienced an error
         elif state == "error":
             self.worker = None
+            self.text_editor.insert_at_end("\n<Error: {}>".format(payload), self.number_of_trailing_newline_characters)
             # Flush the text animation, and then reset UI state
             def _callback():
                 self.set_read_only(False)

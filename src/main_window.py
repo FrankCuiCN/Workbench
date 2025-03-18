@@ -61,6 +61,7 @@ class MainWindow(QMainWindow):
     def show_window(self):
         """Show window"""
         def _show_window():
+            # Remove the minimized flag from the window's state
             self.setWindowState(self.windowState() & ~Qt.WindowMinimized)
             self.show()
             self.activateWindow()
