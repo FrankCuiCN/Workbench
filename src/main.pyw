@@ -28,8 +28,8 @@ def setup_logging():
             logging.StreamHandler(),
             RotatingFileHandler(
                 os.path.join(log_dir, "app.log"),
-                maxBytes=5 * 1024 * 1024,
-                backupCount=5
+                maxBytes=5 * 1024 * 1024,  # max log file size (5 MB)
+                backupCount=5  # keep last 5 backup log files
             )
         ]
     )
