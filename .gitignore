@@ -13,6 +13,9 @@ src-*/
 # Ignore standalone scripts
 standalone/
 
+# Ignore releases
+releases/
+
 # Ignore environment variables
 .env
 .env.local

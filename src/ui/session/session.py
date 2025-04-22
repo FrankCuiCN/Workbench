@@ -20,7 +20,7 @@ class Session(QWidget):
     """A single instance of a text editing session"""
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.client = Client("anthropic")
+        self.client = Client("openai")  # Default backend: openai
         # Set up layout
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
