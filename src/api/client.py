@@ -85,7 +85,7 @@ class Client:
         elif self.backend == "openai":
             messages = translate_messages(self.system_prompt, messages)
             stream = self.client.chat.completions.create(
-                model="gpt-4.5-preview-2025-02-27",
+                model="gpt-4.1",
                 messages=messages,
                 stream=True
             )
