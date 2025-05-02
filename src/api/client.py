@@ -93,7 +93,7 @@ class Client:
                 )
             else:
                 stream = self.client.chat.completions.create(
-                    model="gpt4.1",
+                    model="gpt-4.1",
                     messages=messages,
                     stream=True,
                 )
