@@ -84,11 +84,19 @@ class Client:
             return stream
         elif self.backend == "openai":
             messages = translate_messages(self.system_prompt, messages)
-            stream = self.client.chat.completions.create(
-                model="gpt-4.1",
-                messages=messages,
-                stream=True
-            )
+            if thinking_enabled:
+                stream = self.client.chat.completions.create(
+                    model="o3",
+                    messages=messages,
+                    stream=True,
+                    reasoning_effort="high",
+                )
+            else:
+                stream = self.client.chat.completions.create(
+                    model="gpt4.1",
+                    messages=messages,
+                    stream=True,
+                )
             return stream
         else:
             raise Exception()
