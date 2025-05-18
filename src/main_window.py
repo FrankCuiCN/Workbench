@@ -59,11 +59,19 @@ class MainWindow(QMainWindow):
             self.show_window()
 
     def show_window(self):
-        """Show window"""
         def _show_window():
-            # Remove the minimized flag from the window's state
-            self.setWindowState(self.windowState() & ~Qt.WindowMinimized)
+            # Workaround: To prevent flicker when showing the window on Win 11
+            # Procedure:
+            #   (1) Add the 'minimized' state to the window
+            #   (2) Show the window (when it's minimized, no flicker appears)
+            #   (3) Remove the 'minimized' state to restore the window
+            # Why this works:
+            #   (1) Directly rendering the window causes a flicker on Windows 11
+            #   (2) Rendering it in the taskbar (minimized) avoids the flicker
+            #   (3) Restoring the window from minimized state is flicker-free
+            self.setWindowState(self.windowState() | Qt.WindowMinimized)
             self.show()
+            self.setWindowState(self.windowState() & ~Qt.WindowMinimized)
             self.activateWindow()
             self.is_in_tray = False
         if self.is_in_tray:
@@ -72,7 +80,7 @@ class MainWindow(QMainWindow):
         else:
             logger.debug("Show window: not in tray; hide, delay, then show")
             self.hide_window()
-            # note: The delay is to accommodate win11 multi-desktops
+            # Workaround: To accommodate moving between virtual desktops on Win11
             QTimer.singleShot(100, _show_window)
 
     def hide_window(self):
