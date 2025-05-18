@@ -1,10 +1,12 @@
+import os
 import logging
 import win32con
 from ctypes import windll, wintypes
-from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QApplication, QSystemTrayIcon, QMenu
 from PySide6.QtCore import Qt, QTimer
-from PySide6.QtGui import QAction
+from PySide6.QtGui import QAction, QKeySequence, QShortcut
+from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QApplication, QSystemTrayIcon, QMenu, QFileDialog, QStatusBar
 from ui.workspace import Workspace
+from utils import file_operations
 from utils.app_icons import get_app_icon
 
 logger = logging.getLogger(__name__)
