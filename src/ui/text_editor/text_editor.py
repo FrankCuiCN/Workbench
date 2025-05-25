@@ -28,8 +28,6 @@ class TextEditor(QTextEdit):
         self.animation_manager = AnimatedInsertionManager(self)
         # Internal state for follow mode; default is False
         self.follow_mode = False
-        # Workaround: Warm up to avoid initial lag when inserting an emoji
-        self.fontMetrics().boundingRect("🙂")
         # Logger: Initialization completion
         logger.debug("TextEditor initialized")
 

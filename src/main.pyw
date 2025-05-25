@@ -51,6 +51,11 @@ def main():
     app = QApplication(sys.argv)
     # Set application-wide attributes
     app.setApplicationName("Workbench")
+    # Workaround: Warm up to hide the initial lag when inserting the first emoji
+    from PySide6.QtWidgets import QTextEdit
+    text_edit = QTextEdit()
+    text_edit.fontMetrics().boundingRect("🙂")
+    text_edit.deleteLater()
     # Create main window
     window = MainWindow()
     window.show()
