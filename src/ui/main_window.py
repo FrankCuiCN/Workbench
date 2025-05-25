@@ -42,13 +42,13 @@ class MainWindow(QMainWindow):
         QShortcut(QKeySequence("Ctrl+S"), self).activated.connect(self.handle_save)
         QShortcut(QKeySequence("Ctrl+Shift+S"), self).activated.connect(self.handle_save_as)
         QShortcut(QKeySequence("Ctrl+O"), self).activated.connect(self.handle_load_file)
-        
+    
     def update_window_title(self):
         if self.save_path is None:
             self.setWindowTitle("Untitled - Workbench")
         else:
             self.setWindowTitle("{} - Workbench".format(os.path.basename(self.save_path)))
-
+    
     def handle_save(self):
         logger.info("Save triggered (Ctrl+S).")
         if not self.save_path:
@@ -62,7 +62,7 @@ class MainWindow(QMainWindow):
             except Exception as e:
                 self.statusBar().showMessage(f"Error during save: {e}", 1000)
                 logger.error(f"Error during save: {e}")
-
+    
     def handle_save_as(self):
         logger.info("Save As triggered (Ctrl+Shift+S).")
         try:
@@ -96,7 +96,7 @@ class MainWindow(QMainWindow):
         except Exception as e:
             logger.error(f"Error during load file: {e}")
             self.statusBar().showMessage(f"Error during load file: {e}", 1000)
-
+    
     def setup_system_tray(self):
         """Configure system tray icon and menu"""
         self.tray_icon = QSystemTrayIcon(self)

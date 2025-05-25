@@ -12,8 +12,8 @@ class Workspace(QTabWidget):
         # Define attributes
         self.closed_sessions = []  # Store recently closed sessions
         # Configuration
-        self.setMovable(True)       # Allow tabs to be reordered
         self.setTabsClosable(True)  # Enable close buttons
+        self.setMovable(True)       # Allow tabs to be reordered
         self.setDocumentMode(True)  # A cleaner look
         # Signal: Emitted when the close button on a tab is clicked
         self.tabCloseRequested.connect(self.close_session)
@@ -118,13 +118,10 @@ class Workspace(QTabWidget):
             self.addTab(session, "Session")
     
     def closeEvent(self, event):
-        """Handle close event to clean up all sessions."""
         # Bug: why is this function never called?
-        # Clean up resources for all sessions
         logger.debug(f"Cleaning up resources for {self.count()} sessions")
-        for i in range(self.count()):
-            session = self.widget(i)
-            if session:
-                session.clean_up_resources()
+        for idx in range(self.count()):
+            session = self.widget(idx)
+            session.clean_up_resources()
         # Allow event propagation to continue
         super().closeEvent(event)
