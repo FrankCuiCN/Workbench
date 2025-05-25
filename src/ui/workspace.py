@@ -39,21 +39,23 @@ class Workspace(QTabWidget):
         self.insertTab(tab_index, session, "Session")
         self.setCurrentIndex(tab_index)
     
-    def close_session(self, index, open_new=True):
+    def close_session(self, index, open_new=True, store_session=True):
         # Get the session
         session = self.widget(index)
         # Store session before closing
-        self.closed_sessions.append(session.get_data())
-        if len(self.closed_sessions) > 10: # Keep only the last 10
-            self.closed_sessions.pop(0)
-        logger.debug(f"Stored closed tab. Stack size: {len(self.closed_sessions)}")
+        if store_session:
+            self.closed_sessions.append(session.get_data())
+            if len(self.closed_sessions) > 10: # Keep only the last 10
+                self.closed_sessions.pop(0)
+            logger.debug(f"Stored closed tab. Stack size: {len(self.closed_sessions)}")
         # Clean up resources in the session before removing
         session.clean_up_resources()
         # Remove the session from the UI
         self.removeTab(index)
         # Open a new session if none left
-        if open_new and (self.count() == 0):
-            self.new_session()
+        if open_new:
+            if self.count() == 0:
+                self.new_session()
     
     def close_current_session(self):
         current_index = self.currentIndex()
@@ -110,7 +112,7 @@ class Workspace(QTabWidget):
         session_data_all = data["session_data_all"]
         # Clear existing tabs
         for idx in reversed(range(self.count())):
-            self.close_session(idx, open_new=False)
+            self.close_session(idx, open_new=False, store_session=True)
         # Recreate sessions
         for session_data in session_data_all:
             session = Session(parent=self)
@@ -120,8 +122,8 @@ class Workspace(QTabWidget):
     def closeEvent(self, event):
         # Bug: why is this function never called?
         logger.debug(f"Cleaning up resources for {self.count()} sessions")
-        for idx in range(self.count()):
-            session = self.widget(idx)
-            session.clean_up_resources()
+        # Clear existing tabs
+        for idx in reversed(range(self.count())):
+            self.close_session(idx, open_new=False, store_session=False)
         # Allow event propagation to continue
         super().closeEvent(event)
