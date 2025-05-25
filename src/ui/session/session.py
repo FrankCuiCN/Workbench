@@ -27,11 +27,12 @@ class Session(QWidget):
         # Create text editor
         self.text_editor = TextEditor(self)
         self.text_editor.insertPlainText("User:\n")
-        # Add 10 lines to the end
+        # Add multiple lines to the end
+        # Note: This is a workaround to enable scrolling beyond the last line
         cursor_position = self.text_editor.textCursor().position()
-        self.text_editor.insertPlainText("\n" * 20)  # Add empty lines
+        self.text_editor.insertPlainText(50 * "\n")  # Add empty lines
         cursor = self.text_editor.textCursor()  # Get current text cursor
-        cursor.setPosition(cursor_position)  # Set cursor to stored position
+        cursor.setPosition(cursor_position)     # Set cursor to stored position
         self.text_editor.setTextCursor(cursor)  # Apply cursor position to editor
         # stretch=1: expands to occupy available space
         layout.addWidget(self.text_editor, stretch=1)
@@ -51,6 +52,27 @@ class Session(QWidget):
         # Workaround for scrolling past the last line
         #     New attribute required to store trailing newline count
         self.number_of_trailing_newline_characters = 0
+
+    def get_data(self):
+        return {"text_content": self.text_editor.toPlainText()}
+
+    def set_data(self, data):
+        # Set content
+        self.text_editor.setPlainText(data["text_content"])
+        # Set cursor to the top
+        cursor = self.text_editor.textCursor()
+        cursor.setPosition(0)
+        self.text_editor.setTextCursor(cursor)
+        # Ensure the session is in an idle state
+        self.set_session_state(SessionState.IDLE)
+        # Ensure text editor is not read-only
+        self.set_read_only(False)
+        self.status_bar.update_read_only_status(False)
+        # Other
+        self.client.change_backend("openai")
+        self.status_bar.update_backend_status(self.client.backend)
+        self.text_editor.set_follow_mode(False)
+        self.status_bar.update_following_status(self.text_editor.follow_mode)
 
     def set_session_state(self, state):
         """Update the session state"""
