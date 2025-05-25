@@ -17,8 +17,7 @@ class AnimatedInsertionManager:
     - Dynamically adjusting the speed of insertion based on the number of characters left to process.
 
     The class interacts with the TextEditor instance by manipulating its QTextCursor to
-    append characters, ensuring that visible changes are smoothly animated. It also respects
-    the follow mode of the editor which might adjust viewport scrolling.
+    append characters, ensuring that visible changes are smoothly animated.
     """
     
     def __init__(self, text_editor, ignore_trailing_newline=True):
@@ -77,13 +76,8 @@ class AnimatedInsertionManager:
         if self.current_text and self.current_index < len(self.current_text):
             # Retrieve the next character to insert.
             char = self.current_text[self.current_index]
-            # Select the appropriate QTextCursor based on the follow mode.
-            # If follow_mode is enabled, use the current text cursor of the editor.
-            # Otherwise, create a new QTextCursor for the entire document.
-            if self.text_editor.follow_mode:
-                cursor = self.text_editor.textCursor()
-            else:
-                cursor = QTextCursor(self.text_editor.document())
+            # Create a separate QTextCursor for the entire document.
+            cursor = QTextCursor(self.text_editor.document())
             # Move the cursor to the end of the document.
             cursor.movePosition(QTextCursor.End)
             # If an insertion offset exists, move the cursor backwards by that many characters.
@@ -91,10 +85,6 @@ class AnimatedInsertionManager:
                 cursor.movePosition(QTextCursor.PreviousCharacter, QTextCursor.MoveAnchor, self.insertion_offset)
             # Insert the character at the current cursor position.
             cursor.insertText(char)
-            # If follow mode is enabled, update the text cursor and keep it visible.
-            if self.text_editor.follow_mode:
-                self.text_editor.setTextCursor(cursor)
-                self.text_editor.ensureCursorVisible()
             # Move to the next character in the current text chunk.
             self.current_index += 1
             # Calculate the number of remaining characters in the current text chunk.

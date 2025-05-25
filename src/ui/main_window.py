@@ -5,7 +5,7 @@ import win32con
 from ctypes import windll, wintypes
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QAction, QKeySequence, QShortcut
-from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QApplication, QSystemTrayIcon, QMenu, QFileDialog, QStatusBar
+from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QApplication, QSystemTrayIcon, QMenu, QFileDialog
 from ui.workspace import Workspace
 from utils.app_icons import get_app_icon
 
@@ -30,8 +30,6 @@ class MainWindow(QMainWindow):
         # Add the workspace
         self.workspace = Workspace()
         layout.addWidget(self.workspace)
-        # Add a status bar (workspace-level)
-        self.setStatusBar(QStatusBar(self))
         # Focus on the workspace
         self.workspace.focus()
         # Set up system tray and global hotkeys
@@ -57,10 +55,10 @@ class MainWindow(QMainWindow):
             try:
                 with open(self.save_path, "w", encoding="utf-8") as f:
                     json.dump(self.workspace.get_data(), f, indent=4)
-                self.statusBar().showMessage(f"Saved to {self.save_path}", 1000)
+                self.workspace.widget(self.workspace.currentIndex()).status_bar.show_save_success(f"Saved to {self.save_path}")
                 logger.info(f"Saved to {self.save_path}")
             except Exception as e:
-                self.statusBar().showMessage(f"Error during save: {e}", 5000)
+                self.workspace.widget(self.workspace.currentIndex()).status_bar.show_save_error(f"Error during save: {e}")
                 logger.error(f"Error during save: {e}")
     
     def handle_save_as(self):
@@ -75,11 +73,11 @@ class MainWindow(QMainWindow):
                     json.dump(self.workspace.get_data(), f, indent=4)
                 self.save_path = filepath
                 self.update_window_title()
-                self.statusBar().showMessage(f"Saved to {filepath}", 1000)
+                self.workspace.widget(self.workspace.currentIndex()).status_bar.show_save_success(f"Saved to {filepath}")
                 logger.info(f"Saved to {self.save_path}")
         except Exception as e:
             logger.error(f"Error during save as: {e}")
-            self.statusBar().showMessage(f"Error during save as: {e}", 5000)
+            self.workspace.widget(self.workspace.currentIndex()).status_bar.show_save_error(f"Error during save as: {e}")
     
     def handle_load_file(self):
         """Handles the Ctrl+O (load file) action."""
@@ -92,10 +90,10 @@ class MainWindow(QMainWindow):
                     self.workspace.set_data(json.load(f))
                 self.save_path = filepath
                 self.update_window_title()
-                self.statusBar().showMessage(f"Loaded from {filepath}", 1000)
+                self.workspace.widget(self.workspace.currentIndex()).status_bar.show_save_success(f"Loaded from {filepath}")
         except Exception as e:
             logger.error(f"Error during load file: {e}")
-            self.statusBar().showMessage(f"Error during load file: {e}", 5000)
+            self.workspace.widget(self.workspace.currentIndex()).status_bar.show_save_error(f"Error during load file: {e}")
     
     def setup_system_tray(self):
         """Configure system tray icon and menu"""

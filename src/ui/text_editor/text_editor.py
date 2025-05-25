@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 class TextEditor(QTextEdit):
-    def __init__(self, parent=None):
+    def __init__(self, parent):
         super().__init__(parent)
         # Disable rich text support, per the requirements
         self.setAcceptRichText(False)
@@ -27,15 +27,8 @@ class TextEditor(QTextEdit):
         # Initialize external modules
         self.highlighter = SyntaxHighlighter(self.document())
         self.animation_manager = AnimatedInsertionManager(self)
-        # Internal state for follow mode; default is False
-        self.follow_mode = False
         # Logger: Initialization completion
         logger.debug("TextEditor initialized")
-
-    def set_follow_mode(self, enabled: bool):
-        """Set follow mode explicitly."""
-        self.follow_mode = enabled
-        logger.debug(f"Follow mode set to: {self.follow_mode}")
 
     def insertFromMimeData(self, source):
         """Override to handle pasted image content."""

@@ -9,9 +9,6 @@ class StatusBar(QStatusBar):
         super().__init__(parent)
         # Configuration
         self.setSizeGripEnabled(False)
-        # Add the label for follow mode
-        self.follow_status = QLabel("")
-        self.addPermanentWidget(self.follow_status)
         # Add the label for api backend
         self.backend_status = QLabel("")
         self.addPermanentWidget(self.backend_status)
@@ -36,22 +33,10 @@ class StatusBar(QStatusBar):
         # Update the internal state
         self.internal_state = status_text
     
-    def update_following_status(self, is_following):
-        follow_text = "Follow: ON" if is_following else "Follow: OFF"
-        self.follow_status.setText(f"{follow_text} (F9)")
-    
     def update_read_only_status(self, read_only):
         read_only_text = "Read-Only: ON" if read_only else "Read-Only: OFF"
         self.read_only_status.setText(read_only_text)
     
-    def show_syntax_error(self):
-        self.setStyleSheet("color: red;")
-        self.showMessage("Syntax Error")
-        def _callback():
-            self.setStyleSheet("")
-            self.showMessage(self.internal_state)
-        QTimer.singleShot(1000, _callback)  # Recover in 1 second
-
     def update_backend_status(self, backend):
         if backend == "anthropic":
             self.backend_status.setText("Backend: Anthropic (F10)")
@@ -59,3 +44,27 @@ class StatusBar(QStatusBar):
             self.backend_status.setText("Backend: OpenAI (F10)")
         else:
             raise Exception("Unexpected API backend")
+    
+    def show_syntax_error(self):
+        self.setStyleSheet("color: rgb(200, 0, 0);")
+        self.showMessage("Syntax Error")
+        def _callback():
+            self.setStyleSheet("")
+            self.showMessage(self.internal_state)
+        QTimer.singleShot(1000, _callback)  # Recover in 1 second
+    
+    def show_save_success(self, message):
+        self.setStyleSheet("color: rgb(0, 200, 0);")
+        self.showMessage(message)
+        def _callback():
+            self.setStyleSheet("")
+            self.showMessage(self.internal_state)
+        QTimer.singleShot(1000, _callback)  # Recover in 1 second
+    
+    def show_save_error(self, message):
+        self.setStyleSheet("color: rgb(200, 0, 0);")
+        self.showMessage(message)
+        def _callback():
+            self.setStyleSheet("")
+            self.showMessage(self.internal_state)
+        QTimer.singleShot(5000, _callback)  # Recover in 5 seconds
