@@ -20,8 +20,9 @@ class TextEditor(QTextEdit):
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         # Set custom font
         font = QFont("Sarasa Mono SC", 12)
-        # Disable ligatures
-        font.setStyleStrategy(QFont.StyleStrategy.PreferNoShaping)
+        font.setFeature(QFont.Tag("calt"), 0)  # Disable ligatures
+        font.setFeature(QFont.Tag("liga"), 0)
+        font.setFeature(QFont.Tag("dlig"), 0)
         self.setFont(font)
         # Initialize external modules
         self.highlighter = SyntaxHighlighter(self.document())
