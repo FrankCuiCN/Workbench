@@ -92,7 +92,6 @@ class Workspace(QTabWidget):
         QShortcut(QKeySequence("Ctrl+W"), self).activated.connect(self.close_current_session)
         QShortcut(QKeySequence("Ctrl+Tab"), self).activated.connect(self.next_session)
         QShortcut(QKeySequence("Ctrl+Shift+Tab"), self).activated.connect(self.prev_session)
-        QShortcut(QKeySequence("Ctrl+R"), self).activated.connect(self.reset_current_session)
         QShortcut(QKeySequence("F5"), self).activated.connect(self.reset_current_session)
 
     def closeEvent(self, event):
