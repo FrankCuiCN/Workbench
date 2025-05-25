@@ -46,6 +46,7 @@ class TextEditor(QTextEdit):
             # Create a unique URL with UUID for the image
             image_url = QUrl("image://{}".format(str(uuid.uuid4())))
             # Add the image to the document's resources
+            # Note: Images are not being garbage collected before session clean-up
             self.document().addResource(QTextDocument.ImageResource, image_url, image)
             # Create an image format and set its name to our URL
             imageFormat = QTextImageFormat()
