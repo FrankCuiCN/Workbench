@@ -14,26 +14,24 @@ logger = logging.getLogger(__name__)
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        # Define attributes
+        self.save_path = None
+        self.alt_o_id = 1  # Hotkey IDs
+        self.alt_u_id = 2
         # Configure window
-        self.setWindowTitle("Workbench")
+        self.update_window_title()
         self.resize(800, 600)
         self.setWindowIcon(get_app_icon())
-
         # Set up the main user interface
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         layout = QVBoxLayout(central_widget)
         layout.setContentsMargins(0, 0, 0, 0)
+        # Add the workspace
         self.workspace = Workspace()
         layout.addWidget(self.workspace)
-        QApplication.processEvents()
         # Focus on the workspace
         self.workspace.focus()
-
-        # Hotkey IDs
-        self.alt_o_id = 1
-        self.alt_u_id = 2
-
         # Set up system tray and global hotkeys
         self.is_in_tray = False
         self.setup_system_tray()

@@ -9,20 +9,27 @@ class Workspace(QTabWidget):
     """Workspace for handling multiple sessions."""
     def __init__(self):
         super().__init__()
-        # Configuration: Enable close buttons
-        self.setTabsClosable(True)
-        # Configuration: Allow tabs to be reordered
-        self.setMovable(True)
-        # Configuration: A cleaner look
-        self.setDocumentMode(True)
+        # Define attributes
+        self.closed_tabs = []  # Store recently closed tabs
+        # Configuration
+        self.setMovable(True)       # Allow tabs to be reordered
+        self.setTabsClosable(True)  # Enable close buttons
+        self.setDocumentMode(True)  # A cleaner look
         # Signal: Emitted when the close button on a tab is clicked
         self.tabCloseRequested.connect(self.close_session)
         # Signal: Emitted whenever the current page index changes
         self.currentChanged.connect(self.focus)
-        # Register keyboard shortcuts
-        self.register_shortcuts()
         # Create the first session
         self.add_new_session()
+        # Register keyboard shortcuts
+        QShortcut(QKeySequence("Ctrl+T"), self).activated.connect(self.add_new_session)
+        QShortcut(QKeySequence("Ctrl+N"), self).activated.connect(self.add_new_session)
+        QShortcut(QKeySequence("Ctrl+W"), self).activated.connect(self.close_current_session)
+        QShortcut(QKeySequence("Ctrl+Tab"), self).activated.connect(self.next_session)
+        QShortcut(QKeySequence("Ctrl+Shift+Tab"), self).activated.connect(self.prev_session)
+        QShortcut(QKeySequence("Ctrl+Shift+T"), self).activated.connect(self.reopen_closed_session)
+        QShortcut(QKeySequence("F5"), self).activated.connect(self.reset_current_session)
+
     
     def add_new_session(self):
         """Add a new session in the workspace."""
@@ -84,15 +91,6 @@ class Workspace(QTabWidget):
         # focus() is called (cf currentChanged), current session is None in this case
         if session is not None:
             session.focus()
-
-    def register_shortcuts(self):
-        """Register keyboard shortcuts for session operations."""
-        QShortcut(QKeySequence("Ctrl+T"), self).activated.connect(self.add_new_session)
-        QShortcut(QKeySequence("Ctrl+N"), self).activated.connect(self.add_new_session)
-        QShortcut(QKeySequence("Ctrl+W"), self).activated.connect(self.close_current_session)
-        QShortcut(QKeySequence("Ctrl+Tab"), self).activated.connect(self.next_session)
-        QShortcut(QKeySequence("Ctrl+Shift+Tab"), self).activated.connect(self.prev_session)
-        QShortcut(QKeySequence("F5"), self).activated.connect(self.reset_current_session)
 
     def closeEvent(self, event):
         """Handle close event to clean up all sessions."""
