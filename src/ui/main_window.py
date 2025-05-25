@@ -1,9 +1,11 @@
+import os
+import json
 import logging
 import win32con
 from ctypes import windll, wintypes
-from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QApplication, QSystemTrayIcon, QMenu
 from PySide6.QtCore import Qt, QTimer
-from PySide6.QtGui import QAction
+from PySide6.QtGui import QAction, QKeySequence, QShortcut
+from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QApplication, QSystemTrayIcon, QMenu, QFileDialog, QStatusBar
 from ui.workspace import Workspace
 from utils.app_icons import get_app_icon
 
@@ -12,31 +14,89 @@ logger = logging.getLogger(__name__)
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        # Define attributes
+        self.save_path = None
+        self.alt_o_id = 1  # Hotkey IDs
+        self.alt_u_id = 2
         # Configure window
-        self.setWindowTitle("Workbench")
+        self.update_window_title()
         self.resize(800, 600)
         self.setWindowIcon(get_app_icon())
-
         # Set up the main user interface
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         layout = QVBoxLayout(central_widget)
         layout.setContentsMargins(0, 0, 0, 0)
+        # Add the workspace
         self.workspace = Workspace()
         layout.addWidget(self.workspace)
-        QApplication.processEvents()
+        # Add a status bar (workspace-level)
+        self.setStatusBar(QStatusBar(self))
         # Focus on the workspace
         self.workspace.focus()
-
-        # Hotkey IDs
-        self.alt_o_id = 1
-        self.alt_u_id = 2
-
         # Set up system tray and global hotkeys
         self.is_in_tray = False
         self.setup_system_tray()
         self.register_global_hotkeys()
-
+        # Register keyboard shortcuts
+        QShortcut(QKeySequence("Ctrl+S"), self).activated.connect(self.handle_save)
+        QShortcut(QKeySequence("Ctrl+Shift+S"), self).activated.connect(self.handle_save_as)
+        QShortcut(QKeySequence("Ctrl+O"), self).activated.connect(self.handle_load_file)
+    
+    def update_window_title(self):
+        if self.save_path is None:
+            self.setWindowTitle("Untitled - Workbench")
+        else:
+            self.setWindowTitle("{} - Workbench".format(os.path.basename(self.save_path)))
+    
+    def handle_save(self):
+        logger.info("Save triggered (Ctrl+S).")
+        if not self.save_path:
+            self.handle_save_as()  # If no current file, behave like Save As
+        else:
+            try:
+                with open(self.save_path, "w", encoding="utf-8") as f:
+                    json.dump(self.workspace.get_data(), f, indent=4)
+                self.statusBar().showMessage(f"Saved to {self.save_path}", 1000)
+                logger.info(f"Saved to {self.save_path}")
+            except Exception as e:
+                self.statusBar().showMessage(f"Error during save: {e}", 5000)
+                logger.error(f"Error during save: {e}")
+    
+    def handle_save_as(self):
+        logger.info("Save As triggered (Ctrl+Shift+S).")
+        try:
+            default_save_path = self.save_path if self.save_path else "Untitled.json"
+            filepath, selected_filter = QFileDialog.getSaveFileName(self, "Save As", default_save_path, "JSON (*.json);;All Files (*)")
+            if filepath:
+                if not os.path.splitext(filepath)[1] and selected_filter == "JSON (*.json)":
+                    filepath += ".json"
+                with open(filepath, "w", encoding="utf-8") as f:
+                    json.dump(self.workspace.get_data(), f, indent=4)
+                self.save_path = filepath
+                self.update_window_title()
+                self.statusBar().showMessage(f"Saved to {filepath}", 1000)
+                logger.info(f"Saved to {self.save_path}")
+        except Exception as e:
+            logger.error(f"Error during save as: {e}")
+            self.statusBar().showMessage(f"Error during save as: {e}", 5000)
+    
+    def handle_load_file(self):
+        """Handles the Ctrl+O (load file) action."""
+        logger.info("Load file triggered (Ctrl+O).")
+        try:
+            open_dir = os.path.dirname(self.save_path) if self.save_path else ""
+            filepath, _ = QFileDialog.getOpenFileName(self, "Open File", open_dir, "JSON (*.json);;All Files (*)")
+            if filepath:
+                with open(filepath, "r", encoding="utf-8") as f:
+                    self.workspace.set_data(json.load(f))
+                self.save_path = filepath
+                self.update_window_title()
+                self.statusBar().showMessage(f"Loaded from {filepath}", 1000)
+        except Exception as e:
+            logger.error(f"Error during load file: {e}")
+            self.statusBar().showMessage(f"Error during load file: {e}", 5000)
+    
     def setup_system_tray(self):
         """Configure system tray icon and menu"""
         self.tray_icon = QSystemTrayIcon(self)

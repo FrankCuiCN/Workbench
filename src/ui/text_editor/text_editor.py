@@ -20,16 +20,15 @@ class TextEditor(QTextEdit):
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         # Set custom font
         font = QFont("Sarasa Mono SC", 12)
-        # Disable ligatures
-        font.setStyleStrategy(QFont.StyleStrategy.PreferNoShaping)
+        font.setFeature(QFont.Tag("calt"), 0)  # Disable ligatures
+        font.setFeature(QFont.Tag("liga"), 0)
+        font.setFeature(QFont.Tag("dlig"), 0)
         self.setFont(font)
         # Initialize external modules
         self.highlighter = SyntaxHighlighter(self.document())
         self.animation_manager = AnimatedInsertionManager(self)
         # Internal state for follow mode; default is False
         self.follow_mode = False
-        # Workaround: Warm up to avoid initial lag when inserting an emoji
-        self.fontMetrics().boundingRect("🙂")
         # Logger: Initialization completion
         logger.debug("TextEditor initialized")
 

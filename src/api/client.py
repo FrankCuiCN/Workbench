@@ -70,17 +70,24 @@ class Client:
     def get_stream(self, messages, thinking_enabled=True):
         logger.debug(f"Sending messages to the API server")
         if self.backend == "anthropic":
-            # Configure thinking parameter based on thinking_enabled setting
-            thinking_param = {"type": "enabled", "budget_tokens": 32000} if thinking_enabled else {"type": "disabled"}
-            # Construct and return the stream object
-            stream = self.client.messages.stream(
-                system=self.system_prompt,
-                messages=messages,
-                model="claude-3-7-sonnet-20250219",
-                temperature=1.0,
-                max_tokens=64000,
-                thinking=thinking_param
-            )
+            if thinking_enabled:
+                stream = self.client.messages.stream(
+                    system=self.system_prompt,
+                    messages=messages,
+                    model="claude-opus-4-20250514",
+                    temperature=1.0,
+                    max_tokens=32000,
+                    thinking={"type": "enabled", "budget_tokens": 31999},
+                )
+            else:
+                stream = self.client.messages.stream(
+                    system=self.system_prompt,
+                    messages=messages,
+                    model="claude-sonnet-4-20250514",
+                    temperature=1.0,
+                    max_tokens=32000,
+                    thinking={"type": "disabled"},
+                )
             return stream
         elif self.backend == "openai":
             messages = translate_messages(self.system_prompt, messages)

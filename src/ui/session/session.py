@@ -27,11 +27,12 @@ class Session(QWidget):
         # Create text editor
         self.text_editor = TextEditor(self)
         self.text_editor.insertPlainText("User:\n")
-        # Add 10 lines to the end
+        # Add multiple lines to the end
+        # Note: This is a workaround to enable scrolling beyond the last line
         cursor_position = self.text_editor.textCursor().position()
-        self.text_editor.insertPlainText("\n" * 20)  # Add empty lines
+        self.text_editor.insertPlainText(50 * "\n")  # Add empty lines
         cursor = self.text_editor.textCursor()  # Get current text cursor
-        cursor.setPosition(cursor_position)  # Set cursor to stored position
+        cursor.setPosition(cursor_position)     # Set cursor to stored position
         self.text_editor.setTextCursor(cursor)  # Apply cursor position to editor
         # stretch=1: expands to occupy available space
         layout.addWidget(self.text_editor, stretch=1)
@@ -133,18 +134,7 @@ class Session(QWidget):
             self.text_editor.flush_animation(_callback)
         else:
             raise Exception()
-
-    def clean_up_resources(self):
-        """Clean up any resources used by this session"""
-        logger.debug("Cleaning up session resources")
-        # Halt the worker if active
-        if self.worker:
-            self.worker.request_stop()
-            self.worker = None
-
-    def focus(self):
-        self.text_editor.setFocus()
-
+    
     def eventFilter(self, source, event):
         if (source is self.text_editor) and (event.type() == QEvent.KeyPress):
             mods, key = event.modifiers(), event.key()
@@ -206,3 +196,28 @@ class Session(QWidget):
         else:
             self.client.change_backend("anthropic")
         self.status_bar.update_backend_status(self.client.backend)
+    
+    def get_data(self):
+        # Note: get_data() should not interfere with session activities
+        return {"text_content": self.text_editor.toPlainText()}
+    
+    def set_data(self, data):
+        # Note: We assume set_data() is always used with a new session
+        #   That is, we don't worry about session activities
+        # Set content
+        self.text_editor.setPlainText(data["text_content"])
+        # Set cursor to the top
+        cursor = self.text_editor.textCursor()
+        cursor.setPosition(0)
+        self.text_editor.setTextCursor(cursor)
+    
+    def clean_up_resources(self):
+        """Clean up any resources used by this session"""
+        logger.debug("Cleaning up session resources")
+        # Halt the worker if active
+        if self.worker:
+            self.worker.request_stop()
+            self.worker = None
+    
+    def focus(self):
+        self.text_editor.setFocus()

@@ -12,8 +12,8 @@ else:
 # Import other dependencies
 import logging
 from logging.handlers import RotatingFileHandler
-from PySide6.QtWidgets import QApplication
-from main_window import MainWindow
+from PySide6.QtWidgets import QApplication, QTextEdit
+from ui.main_window import MainWindow
 
 
 def setup_logging():
@@ -51,6 +51,10 @@ def main():
     app = QApplication(sys.argv)
     # Set application-wide attributes
     app.setApplicationName("Workbench")
+    # Workaround: Warm up to hide the initial lag when inserting the first emoji
+    text_edit = QTextEdit()
+    text_edit.fontMetrics().boundingRect("🙂")
+    text_edit.deleteLater()
     # Create main window
     window = MainWindow()
     window.show()
