@@ -69,7 +69,7 @@ class MainWindow(QMainWindow):
             default_save_path = self.save_path if self.save_path else "Untitled.json"
             filepath, selected_filter = QFileDialog.getSaveFileName(self, "Save As", default_save_path, "JSON (*.json);;All Files (*)")
             if filepath:
-                if not filepath.endswith(".json") and (selected_filter == "JSON (*.json)"):
+                if not os.path.splitext(filepath)[1] and selected_filter == "JSON (*.json)":
                     filepath += ".json"
                 with open(filepath, "w", encoding="utf-8") as f:
                     json.dump(self.workspace.get_data(), f, indent=4)
