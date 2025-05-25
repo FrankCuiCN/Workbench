@@ -60,7 +60,7 @@ class MainWindow(QMainWindow):
                 self.statusBar().showMessage(f"Saved to {self.save_path}", 1000)
                 logger.info(f"Saved to {self.save_path}")
             except Exception as e:
-                self.statusBar().showMessage(f"Error during save: {e}", 1000)
+                self.statusBar().showMessage(f"Error during save: {e}", 5000)
                 logger.error(f"Error during save: {e}")
     
     def handle_save_as(self):
@@ -79,7 +79,7 @@ class MainWindow(QMainWindow):
                 logger.info(f"Saved to {self.save_path}")
         except Exception as e:
             logger.error(f"Error during save as: {e}")
-            self.statusBar().showMessage(f"Error during save as: {e}", 1000)
+            self.statusBar().showMessage(f"Error during save as: {e}", 5000)
     
     def handle_load_file(self):
         """Handles the Ctrl+O (load file) action."""
@@ -95,7 +95,7 @@ class MainWindow(QMainWindow):
                 self.statusBar().showMessage(f"Loaded from {filepath}", 1000)
         except Exception as e:
             logger.error(f"Error during load file: {e}")
-            self.statusBar().showMessage(f"Error during load file: {e}", 1000)
+            self.statusBar().showMessage(f"Error during load file: {e}", 5000)
     
     def setup_system_tray(self):
         """Configure system tray icon and menu"""
