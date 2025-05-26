@@ -54,7 +54,7 @@ def main():
     # Workaround: Warm up to hide the initial lag when inserting the first emoji
     text_edit = QTextEdit()
     text_edit.fontMetrics().boundingRect("🙂")
-    text_edit.deleteLater()
+    text_edit.deleteLater()  # Self-Deletion
     # Create main window
     window = MainWindow()
     window.show()

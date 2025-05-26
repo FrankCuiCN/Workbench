@@ -92,7 +92,7 @@ class Session(QWidget):
                 index -= 1
             self.number_of_trailing_newline_characters = trailing_newlines
             # Create a worker
-            self.worker = Worker(self.workspace.client, messages, thinking_enabled)
+            self.worker = Worker(self.workspace.client, messages, thinking_enabled, parent=self)
             # Connect the signal
             self.worker.signal.connect(self.on_worker_event)
             # Start the worker
@@ -177,7 +177,7 @@ class Session(QWidget):
             #     So SessionState is not IDLE
             if self.worker:
                 logger.debug("Escape key pressed, halting the worker")
-                self.worker.request_stop()
+                self.worker.request_stop()  # Note: Worker performs self-deletion automatically
                 # If already generating, add the User tag
                 if self.session_state == SessionState.GENERATING:
                     self.text_editor.insert_at_end("\nUser:\n", self.number_of_trailing_newline_characters)
@@ -206,8 +206,11 @@ class Session(QWidget):
         logger.debug("Cleaning up session resources")
         # Halt the worker if active
         if self.worker:
-            self.worker.request_stop()
-            self.worker = None
+            self.worker.request_stop()  # Note: Worker performs self-deletion automatically
+        # Clean up text editor resources
+        self.text_editor.clean_up_resources()
+        # Self-deletion
+        self.deleteLater()
     
     def focus(self):
         self.text_editor.setFocus()

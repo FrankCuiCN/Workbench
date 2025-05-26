@@ -115,3 +115,7 @@ class TextEditor(QTextEdit):
             QTimer.singleShot(10, lambda: self.flush_animation(callback))
         else:
             callback()
+
+    def clean_up_resources(self):
+        # Self-Deletion
+        self.deleteLater()
