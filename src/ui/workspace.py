@@ -9,9 +9,10 @@ logger = logging.getLogger(__name__)
 
 class Workspace(QTabWidget):
     """Workspace for handling multiple sessions."""
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent):
+        super().__init__(parent)
         # Define attributes
+        self.main_window = parent
         self.closed_sessions = []       # Store recently closed sessions
         self.client = Client("openai")  # Default backend: openai
         # Configuration
@@ -30,13 +31,14 @@ class Workspace(QTabWidget):
         QShortcut(QKeySequence("Ctrl+Tab"), self).activated.connect(self.next_session)
         QShortcut(QKeySequence("Ctrl+Shift+Tab"), self).activated.connect(self.prev_session)
         QShortcut(QKeySequence("Ctrl+Shift+T"), self).activated.connect(self.reopen_closed_session)
+        QShortcut(QKeySequence("Ctrl+R"), self).activated.connect(self.reset_current_session)
         QShortcut(QKeySequence("F5"), self).activated.connect(self.reset_current_session)
         QShortcut(QKeySequence("F10"), self).activated.connect(self.change_api_backend)
     
     def new_session(self, tab_index=None):
         if tab_index is None:
             tab_index = self.count()
-        session = Session(parent=self)
+        session = Session(self)
         self.insertTab(tab_index, session, "Session")
         self.setCurrentIndex(tab_index)
     
@@ -96,7 +98,7 @@ class Workspace(QTabWidget):
         session_data = self.closed_sessions.pop()
         logger.debug(f"Reopening tab. Stack size: {len(self.closed_sessions)}")
         # Create the session
-        session = Session(parent=self)
+        session = Session(self)
         session.set_data(session_data)
         # Add to the end
         tab_index = self.addTab(session, "Session")
@@ -118,7 +120,7 @@ class Workspace(QTabWidget):
         self.closed_sessions = []
         # Recreate sessions
         for session_data in session_data_all:
-            session = Session(parent=self)
+            session = Session(self)
             session.set_data(session_data)
             self.addTab(session, "Session")
     
@@ -128,10 +130,8 @@ class Workspace(QTabWidget):
             self.client.change_backend("openai")
         else:
             self.client.change_backend("anthropic")
-        # Workaround: Update the status bars from all sessions
-        for idx in range(self.count()):
-            session = self.widget(idx)
-            session.status_bar.update_backend_status(self.client.backend)
+        # Update the global status bar
+        self.main_window.global_status_bar.update_backend_status(self.client.backend)
         logger.debug(f"Backend changed to: {self.client.backend}")
     
     def closeEvent(self, event):
