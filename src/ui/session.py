@@ -212,7 +212,6 @@ class Session(QWidget):
     def focus(self):
         self.text_editor.setFocus()
     
-    # Unchecked
     def show_search_dialog(self):
         dialog = QDialog(self)
         dialog.setWindowTitle("Search")
@@ -228,7 +227,6 @@ class Session(QWidget):
         line_edit.returnPressed.connect(_submit)
         dialog.exec()
     
-    # Unchecked
     def find_next(self):
         if not self.search_text:
             return

@@ -1,7 +1,7 @@
 import logging
 from PySide6.QtWidgets import QTabWidget
 from PySide6.QtGui import QShortcut, QKeySequence
-from ui.session.session import Session
+from ui.session import Session
 from api.client import Client
 
 logger = logging.getLogger(__name__)
