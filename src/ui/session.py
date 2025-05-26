@@ -217,12 +217,11 @@ class Session(QWidget):
     
     def show_search_dialog(self):
         dialog = QDialog(self)
-        dialog.setWindowTitle("Search")
+        dialog.setWindowTitle("Enter: Submit        F3: Find Next")
         dialog.setModal(True)  # Note: Prevent interaction with main window
         dialog.setFixedWidth(400)
         layout = QVBoxLayout(dialog)
         line_edit = QLineEdit(self.search_text, dialog)
-        line_edit.setPlaceholderText("Enter: Submit text    F3: Find next")
         layout.addWidget(line_edit)
         def _submit():
             self.search_text = line_edit.text()
@@ -236,6 +235,7 @@ class Session(QWidget):
         # Get current cursor position
         cursor = self.text_editor.textCursor()
         # Search forward from current position
+        # Note: By default find() is case insensitive (PySide 6.9)
         found_cursor = self.text_editor.document().find(self.search_text, cursor)
         # If not found, wrap around to the beginning
         if found_cursor.isNull():

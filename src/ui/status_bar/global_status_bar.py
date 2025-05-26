@@ -14,7 +14,7 @@ class GlobalStatusBar(QStatusBar):
         self.backend_status = QLabel("")
         self.addPermanentWidget(self.backend_status)
         # Internal state
-        self.internal_state = "Ctrl+R: Reset Current Session  |  Ctrl+F: Search  |  Ctrl+Shift+T: Restore Closed Tabs"
+        self.internal_state = "Ctrl+F: Find  |  Ctrl+R: Reset Current Session  |  Ctrl+Shift+T: Restore Closed Sessions"
         self.showMessage(self.internal_state)
     
     def update_backend_status(self, backend):
