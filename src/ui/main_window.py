@@ -194,7 +194,7 @@ class MainWindow(QMainWindow):
         """Exit the application."""
         logger.info("Quit application requested")
         # Clean up workspace resources
-        self.workspace.close()
+        self.workspace.clean_up_resources()
         # Unregister hotkeys
         self.unregister_global_hotkeys()
         # Hide tray icon

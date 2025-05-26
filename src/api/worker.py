@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 class Worker(QObject):
     # Unified signal for all worker events
     signal = Signal(dict)
-    def __init__(self, parent, client, messages, thinking_enabled=True):
+    def __init__(self, client, messages, thinking_enabled=True, parent=None):
         super().__init__(parent)
         # Initialize attributes
         self.client = client
@@ -20,13 +20,19 @@ class Worker(QObject):
         self.backend = client.backend
 
     def start(self):
-        thread = threading.Thread(target=self._background_task)
+        thread = threading.Thread(target=self._background_task_with_cleanup)
         thread.daemon = True
         thread.start()
 
     def request_stop(self):
         logger.debug("The task is requested to stop")
         self.stop_requested = True
+
+    def _background_task_with_cleanup(self):
+        self._background_task()
+        # Self-Deletion
+        logger.debug("Calling deleteLater on Worker")
+        self.deleteLater()
 
     def _background_task(self):
         try:
