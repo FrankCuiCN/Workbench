@@ -1,24 +1,27 @@
 import logging
 from PySide6.QtWidgets import QTabWidget
 from PySide6.QtGui import QShortcut, QKeySequence
-from ui.session.session import Session
+from ui.session import Session
+from api.client import Client
 
 logger = logging.getLogger(__name__)
 
+
 class Workspace(QTabWidget):
     """Workspace for handling multiple sessions."""
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent):
+        super().__init__(parent)
         # Define attributes
-        self.closed_sessions = []  # Store recently closed sessions
+        self.main_window = parent
+        self.closed_sessions = []       # Store recently closed sessions
+        self.client = Client("openai")  # Default backend: openai
         # Configuration
         self.setTabsClosable(True)  # Enable close buttons
         self.setMovable(True)       # Allow tabs to be reordered
         self.setDocumentMode(True)  # A cleaner look
-        # Signal: Emitted when the close button on a tab is clicked
-        self.tabCloseRequested.connect(self.close_session)
-        # Signal: Emitted whenever the current page index changes
-        self.currentChanged.connect(self.focus)
+        # Signal
+        self.tabCloseRequested.connect(self.close_session)  # Session close button is clicked
+        self.currentChanged.connect(self.focus)  # The current session index changes
         # Create the first session
         self.new_session()
         # Register keyboard shortcuts
@@ -28,14 +31,14 @@ class Workspace(QTabWidget):
         QShortcut(QKeySequence("Ctrl+Tab"), self).activated.connect(self.next_session)
         QShortcut(QKeySequence("Ctrl+Shift+Tab"), self).activated.connect(self.prev_session)
         QShortcut(QKeySequence("Ctrl+Shift+T"), self).activated.connect(self.reopen_closed_session)
+        QShortcut(QKeySequence("Ctrl+R"), self).activated.connect(self.reset_current_session)
         QShortcut(QKeySequence("F5"), self).activated.connect(self.reset_current_session)
-        # QShortcut(QKeySequence("F9"), self).activated.connect(self.toggle_follow_mode)
-        # QShortcut(QKeySequence("F10"), self).activated.connect(self.change_api_backend)
+        QShortcut(QKeySequence("F10"), self).activated.connect(self.change_api_backend)
     
     def new_session(self, tab_index=None):
         if tab_index is None:
             tab_index = self.count()
-        session = Session(parent=self)
+        session = Session(self)
         self.insertTab(tab_index, session, "Session")
         self.setCurrentIndex(tab_index)
     
@@ -45,7 +48,7 @@ class Workspace(QTabWidget):
         # Store session before closing
         if store_session:
             self.closed_sessions.append(session.get_data())
-            if len(self.closed_sessions) > 10: # Keep only the last 10
+            if len(self.closed_sessions) > 20:  # Keep the last 20 sessions
                 self.closed_sessions.pop(0)
             logger.debug(f"Stored closed tab. Stack size: {len(self.closed_sessions)}")
         # Clean up resources in the session before removing
@@ -95,7 +98,7 @@ class Workspace(QTabWidget):
         session_data = self.closed_sessions.pop()
         logger.debug(f"Reopening tab. Stack size: {len(self.closed_sessions)}")
         # Create the session
-        session = Session(parent=self)
+        session = Session(self)
         session.set_data(session_data)
         # Add to the end
         tab_index = self.addTab(session, "Session")
@@ -110,14 +113,26 @@ class Workspace(QTabWidget):
     
     def set_data(self, data):
         session_data_all = data["session_data_all"]
-        # Clear existing tabs
+        # Clear existing tabs without storing them
         for idx in reversed(range(self.count())):
-            self.close_session(idx, open_new=False, store_session=True)
+            self.close_session(idx, open_new=False, store_session=False)
+        # Clean up closed sessions
+        self.closed_sessions = []
         # Recreate sessions
         for session_data in session_data_all:
-            session = Session(parent=self)
+            session = Session(self)
             session.set_data(session_data)
             self.addTab(session, "Session")
+    
+    def change_api_backend(self):
+        """Change API backend for all sessions"""
+        if self.client.backend == "anthropic":
+            self.client.change_backend("openai")
+        else:
+            self.client.change_backend("anthropic")
+        # Update the global status bar
+        self.main_window.global_status_bar.update_backend_status(self.client.backend)
+        logger.debug(f"Backend changed to: {self.client.backend}")
     
     def closeEvent(self, event):
         # Bug: why is this function never called?

@@ -1,14 +1,15 @@
 import logging
 from enum import Enum, auto
-from PySide6.QtWidgets import QWidget, QVBoxLayout
 from PySide6.QtCore import QEvent, Qt
-from ui.text_editor.text_editor import TextEditor
-from ui.status_bar import StatusBar
+from PySide6.QtWidgets import QWidget, QVBoxLayout
+from PySide6.QtWidgets import QDialog, QHBoxLayout, QLineEdit, QPushButton, QLabel
 from api.worker import Worker
+from ui.status_bar.local_status_bar import LocalStatusBar
+from ui.text_editor.text_editor import TextEditor
 from utils.parse_text import parse_text
-from api.client import Client
 
 logger = logging.getLogger(__name__)
+
 
 class SessionState(Enum):
     IDLE = auto()
@@ -16,11 +17,14 @@ class SessionState(Enum):
     THINKING = auto()
     GENERATING = auto()
 
+
 class Session(QWidget):
     """A single instance of a text editing session"""
-    def __init__(self, parent=None):
+    def __init__(self, parent):
         super().__init__(parent)
-        self.client = Client("openai")  # Default backend: openai
+        # Define attributes
+        self.workspace = parent
+        self.search_text = ""
         # Set up layout
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -42,12 +46,10 @@ class Session(QWidget):
         self.worker = None
         # Install event filter on text editor to handle key events
         self.text_editor.installEventFilter(self)
-        # Initialize the status bar
-        self.status_bar = StatusBar(self)
+        # Initialize the local status bar
+        self.status_bar = LocalStatusBar(self)
         self.status_bar.update_session_status(self.session_state.name.lower())
-        self.status_bar.update_following_status(self.text_editor.follow_mode)
         self.status_bar.update_read_only_status(self.text_editor.isReadOnly())
-        self.status_bar.update_backend_status(self.client.backend)
         layout.addWidget(self.status_bar)
         # Workaround for scrolling past the last line
         #     New attribute required to store trailing newline count
@@ -90,7 +92,7 @@ class Session(QWidget):
                 index -= 1
             self.number_of_trailing_newline_characters = trailing_newlines
             # Create a worker
-            self.worker = Worker(self.client, messages, thinking_enabled)
+            self.worker = Worker(self.workspace.client, messages, thinking_enabled)
             # Connect the signal
             self.worker.signal.connect(self.on_worker_event)
             # Start the worker
@@ -150,11 +152,11 @@ class Session(QWidget):
             elif (not mods) and (key == Qt.Key_Escape):
                 self.key_press_escape()
                 return True
-            elif (not mods) and (key == Qt.Key_F9):
-                self.key_press_f9()
+            elif (mods == Qt.ControlModifier) and (key == Qt.Key_F):
+                self.show_search_dialog()
                 return True
-            elif (not mods) and (key == Qt.Key_F10):
-                self.key_press_f10()
+            elif (not mods) and (key == Qt.Key_F3):
+                self.find_next()
                 return True
         return super().eventFilter(source, event)
     
@@ -185,18 +187,6 @@ class Session(QWidget):
                     self.set_session_state(SessionState.IDLE)
                 self.text_editor.flush_animation(_callback)
 
-    def key_press_f9(self):
-        self.text_editor.set_follow_mode(not self.text_editor.follow_mode)
-        self.status_bar.update_following_status(self.text_editor.follow_mode)
-
-    def key_press_f10(self):
-        current_backend = self.client.backend
-        if current_backend == "anthropic":
-            self.client.change_backend("openai")
-        else:
-            self.client.change_backend("anthropic")
-        self.status_bar.update_backend_status(self.client.backend)
-    
     def get_data(self):
         # Note: get_data() should not interfere with session activities
         return {"text_content": self.text_editor.toPlainText()}
@@ -221,3 +211,35 @@ class Session(QWidget):
     
     def focus(self):
         self.text_editor.setFocus()
+    
+    def show_search_dialog(self):
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Search")
+        dialog.setModal(True)  # Note: Prevent interaction with main window
+        dialog.setFixedWidth(400)
+        layout = QVBoxLayout(dialog)
+        line_edit = QLineEdit(self.search_text, dialog)
+        line_edit.setPlaceholderText("Enter: Submit text    F3: Find next")
+        layout.addWidget(line_edit)
+        def _submit():
+            self.search_text = line_edit.text()
+            dialog.accept()
+        line_edit.returnPressed.connect(_submit)
+        dialog.exec()
+    
+    def find_next(self):
+        if not self.search_text:
+            return
+        # Get current cursor position
+        cursor = self.text_editor.textCursor()
+        # Search forward from current position
+        found_cursor = self.text_editor.document().find(self.search_text, cursor)
+        # If not found, wrap around to the beginning
+        if found_cursor.isNull():
+            found_cursor = self.text_editor.document().find(self.search_text, 0)
+        # If still not found, nothing to do
+        if found_cursor.isNull():
+            return
+        # Select the found text
+        self.text_editor.setTextCursor(found_cursor)
+        self.text_editor.ensureCursorVisible()
