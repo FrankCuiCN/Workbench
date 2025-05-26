@@ -135,10 +135,11 @@ class Workspace(QTabWidget):
         logger.debug(f"Backend changed to: {self.client.backend}")
     
     def closeEvent(self, event):
-        # Bug: why is this function never called?
         logger.debug(f"Cleaning up resources for {self.count()} sessions")
         # Clear existing tabs
         for idx in reversed(range(self.count())):
             self.close_session(idx, open_new=False, store_session=False)
+        # Clear closed_sessions
+        self.closed_sessions = []
         # Allow event propagation to continue
         super().closeEvent(event)

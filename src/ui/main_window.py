@@ -193,8 +193,13 @@ class MainWindow(QMainWindow):
     def quit_application(self):
         """Exit the application."""
         logger.info("Quit application requested")
+        # Clean up workspace resources
+        self.workspace.close()
+        # Unregister hotkeys
         self.unregister_global_hotkeys()
+        # Hide tray icon
         self.tray_icon.hide()
+        # Quit application
         QApplication.quit()
 
     def nativeEvent(self, eventType, message):

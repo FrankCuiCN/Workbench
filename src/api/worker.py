@@ -7,8 +7,8 @@ logger = logging.getLogger(__name__)
 class Worker(QObject):
     # Unified signal for all worker events
     signal = Signal(dict)
-    def __init__(self, client, messages, thinking_enabled=True):
-        super().__init__()
+    def __init__(self, parent, client, messages, thinking_enabled=True):
+        super().__init__(parent)
         # Initialize attributes
         self.client = client
         self.messages = messages
