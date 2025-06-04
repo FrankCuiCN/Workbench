@@ -6,6 +6,9 @@ from ctypes import windll, wintypes
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QAction, QKeySequence, QShortcut
 from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QApplication, QSystemTrayIcon, QMenu, QFileDialog
+
+# NOTE: Workbench relies on Windows-specific APIs (e.g., win32con) and is
+# currently tested and supported only on Windows 10.
 from ui.workspace import Workspace
 from ui.status_bar.global_status_bar import GlobalStatusBar
 from utils.app_icons import get_app_icon
