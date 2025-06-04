@@ -1,5 +1,8 @@
 import os
 import logging
+import base64
+import io
+from PIL import Image
 import anthropic
 from openai import OpenAI
 
@@ -67,8 +70,45 @@ class Client:
             raise Exception(f"Unknown backend: {self.backend}")
         logger.info(f"Backend changed to {self.backend}")
 
+    def _resize_base64_image(self, base64_str, max_edge=2048):
+        """Resize image so that its longest edge is <= max_edge."""
+        image_data = base64.b64decode(base64_str)
+        image = Image.open(io.BytesIO(image_data))
+        width, height = image.size
+        scale = min(1.0, float(max_edge) / max(width, height))
+        if scale < 1.0:
+            new_size = (int(width * scale), int(height * scale))
+            image = image.resize(new_size, Image.LANCZOS)
+            logger.debug(f"Resized image to {new_size[0]}x{new_size[1]}")
+        else:
+            new_size = (width, height)
+        buffer = io.BytesIO()
+        image.save(buffer, format="PNG")
+        encoded = base64.b64encode(buffer.getvalue()).decode("utf-8")
+        return encoded, new_size
+
+    def _preprocess_images(self, messages):
+        """Resize images in messages and log their dimensions."""
+        processed = []
+        for msg in messages:
+            msg_copy = msg.copy()
+            content = msg.get("content")
+            if isinstance(content, list):
+                new_content = []
+                for item in content:
+                    if item.get("type") == "image" and item.get("source", {}).get("type") == "base64":
+                        data = item["source"]["data"]
+                        data, size = self._resize_base64_image(data)
+                        item = {**item, "source": {**item["source"], "data": data}}
+                        logger.info(f"Sending image of size {size[0]}x{size[1]}")
+                    new_content.append(item)
+                msg_copy["content"] = new_content
+            processed.append(msg_copy)
+        return processed
+
     def get_stream(self, messages, thinking_enabled=True):
-        logger.debug(f"Sending messages to the API server")
+        logger.debug("Sending messages to the API server")
+        messages = self._preprocess_images(messages)
         if self.backend == "anthropic":
             if thinking_enabled:
                 stream = self.client.messages.stream(
