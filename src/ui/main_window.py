@@ -5,7 +5,16 @@ import win32con
 from ctypes import windll, wintypes
 from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QAction, QKeySequence, QShortcut
-from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QWidget, QApplication, QSystemTrayIcon, QMenu, QFileDialog
+from PySide6.QtWidgets import (
+    QMainWindow,
+    QVBoxLayout,
+    QWidget,
+    QApplication,
+    QSystemTrayIcon,
+    QMenu,
+    QFileDialog,
+    QMessageBox,
+)
 from ui.workspace import Workspace
 from ui.status_bar.global_status_bar import GlobalStatusBar
 from utils.app_icons import get_app_icon
@@ -191,8 +200,24 @@ class MainWindow(QMainWindow):
             logger.error(f"Error unregistering hotkeys: {e}")
 
     def quit_application(self):
-        """Exit the application."""
+        """Ask to save and exit the application."""
         logger.info("Quit application requested")
+
+        # Prompt the user to save
+        result = QMessageBox.question(
+            self,
+            "Exit Workbench",
+            "Do you want to save before exiting?",
+            QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel,
+            QMessageBox.Cancel,
+        )
+
+        if result == QMessageBox.Cancel:
+            logger.debug("Exit cancelled by user")
+            return
+        if result == QMessageBox.Yes:
+            self.handle_save()
+
         # Clean up workspace resources
         self.workspace.clean_up_resources()
         # Unregister hotkeys
