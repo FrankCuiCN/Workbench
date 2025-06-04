@@ -34,7 +34,7 @@ def translate_messages(system_prompt, messages):
     return translated_messages
 
 class Client:
-    # The following procedures is put here in order to promote reuse and to
+    # The following procedure is put here in order to promote reuse and to
     #     avoid overhead in __init__
     # Initialize both clients
     client_anthropic = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
