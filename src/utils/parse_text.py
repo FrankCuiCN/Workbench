@@ -67,8 +67,8 @@ def parse_text(text):
                         "source": {
                             "type": "base64",
                             "media_type": "image/png",
-                            "data": base64_str
-                        }
+                            "data": base64_str,
+                        },
                     })
                 else:
                     # Debug: re.split introduces empty strings
@@ -77,7 +77,7 @@ def parse_text(text):
                         # Add text part, including empty strings
                         content_list.append({
                             "type": "text",
-                            "text": part
+                            "text": part,
                         })
             messages.append({"role": role, "content": content_list})
         else:
