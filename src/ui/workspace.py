@@ -13,8 +13,8 @@ class Workspace(QTabWidget):
         super().__init__(parent)
         # Define attributes
         self.main_window = parent
-        self.closed_sessions = []       # Store recently closed sessions
-        self.client = Client("openai")  # Default backend: openai
+        self.closed_sessions = []  # Store recently closed sessions
+        self.client = Client("anthropic")  # Default backend
         # Configuration
         self.setTabsClosable(True)  # Enable close buttons
         self.setMovable(True)       # Allow tabs to be reordered
