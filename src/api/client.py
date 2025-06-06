@@ -71,7 +71,11 @@ class Client:
         if self.backend == "anthropic":
             if thinking_enabled:
                 stream = self.client.messages.stream(
-                    system=self.system_prompt,
+                    system=[{
+                        "type": "text",
+                        "text": self.system_prompt,
+                        "cache_control": {"type": "ephemeral"},
+                    }],
                     messages=messages,
                     model="claude-opus-4-20250514",
                     temperature=1.0,
@@ -80,7 +84,11 @@ class Client:
                 )
             else:
                 stream = self.client.messages.stream(
-                    system=self.system_prompt,
+                    system=[{
+                        "type": "text",
+                        "text": self.system_prompt,
+                        "cache_control": {"type": "ephemeral"},
+                    }],
                     messages=messages,
                     model="claude-sonnet-4-20250514",
                     temperature=1.0,
