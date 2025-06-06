@@ -81,9 +81,11 @@ def parse_text(text):
                         })
             messages.append({"role": role, "content": content_list})
         else:
-            # Text-only content remains a string
-            messages.append({"role": role, "content": content})
-    
+            content_list = [{
+                "type": "text",
+                "text": content,
+            }]
+            messages.append({"role": role, "content": content_list})
     # Validate alternating roles and ending with "user"
     if len(messages) > 1:
         for i in range(len(messages) - 1):
