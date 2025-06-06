@@ -8,7 +8,7 @@ Ensure you have valid API keys set in your environment for the following service
 
 ## Disclaimer
 - Please note that our tool functions solely as a user interface for accessing third-party AI API services. While we do our best to provide a reliable experience, we are not responsible or liable for users' actions, decisions, or consequences resulting from interactions with these APIs.
-- We highly recommend users define their own "system_prompt.txt" file to clearly steer the AI's behavior according to their specific needs. The system prompt we provide should serve merely as a helpful reference example.
+- We highly recommend users define their own "system_prompt.xml" file to clearly steer the AI's behavior according to their specific needs. The system prompt we provide should serve merely as a helpful reference example.
 - Users remain solely responsible for content generated and for any resulting consequences.
 - By using our tool, you agree to act responsibly and adhere to all applicable guidelines and policies.
 

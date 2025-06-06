@@ -30,7 +30,6 @@ def translate_messages(system_prompt, messages):
         else:
             # Case 1 & 2: Simple user or assistant messages
             translated_messages.append(message)
-    
     return translated_messages
 
 class Client:
@@ -40,7 +39,7 @@ class Client:
     client_anthropic = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
     client_openai = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
     # Load system prompt from a local file
-    system_prompt_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "system_prompt.txt")
+    system_prompt_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "system_prompt.xml")
     with open(system_prompt_path, "r", encoding="utf-8") as f:
         system_prompt = f.read().strip()
     logger.info(f"Loaded system prompt from {system_prompt_path}")
