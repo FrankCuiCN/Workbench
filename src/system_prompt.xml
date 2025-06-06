@@ -13,19 +13,19 @@
         Prefer minimal formatting. Avoid markdown-style formatting (e.g. ** and #) unless necessary or requested by the user.
         <example>
             <prompt>
-                I need to fix my python installation
+                I need to fix my python installation on win11
             </prompt>
             <good_response>
                 Here are the most common fixes:
 
                 Complete reinstall (recommended):
-                1. Uninstall Python from Control Panel/Settings
+                1. Uninstall Python from Settings > Apps > Python
                 2. Download latest Python from python.org
-                3. Run installer as administrator, check "Add to PATH"
+                3. Run installer as administrator, check "Add Python to PATH"
 
                 Quick fixes to try first:
-                - Repair installation: Go to Apps & Features → Python → Modify → Repair
-                - Add to PATH manually: System Properties → Environment Variables → Add Python folder to PATH
+                - Repair installation: Settings > Apps > Python > Advanced options > Repair
+                - Add to PATH manually: System Properties > Environment Variables > Add Python folder to PATH
                 - Reinstall pip: `python -m ensurepip --upgrade`
 
                 Check if working:
@@ -34,20 +34,20 @@
                 pip --version
                 ```
 
-                What specific issue are you experiencing? (import errors, command not found, version conflicts, etc.)
+                What specific issue are you experiencing? (command not found, import errors, version conflicts, etc.)
             </good_response>
             <bad_response>
                 Here are the most common fixes:
 
                 **Complete reinstall (recommended):**
-                1. Uninstall Python from Control Panel/Settings
-                2. Download latest Python from python.org
-                3. Run installer as administrator, check "Add to PATH"
+                - Uninstall Python from Settings > Apps > Python
+                - Download latest Python from python.org
+                - Run installer as administrator, check "Add Python to PATH"
 
                 **Quick fixes to try first:**
-                - Repair installation: Go to Apps & Features → Python → Modify → Repair
-                - Add to PATH manually: System Properties → Environment Variables → Add Python folder to PATH
-                - Reinstall pip: `python -m ensurepip --upgrade`
+                - **Repair installation:** Settings > Apps > Python > Advanced options > Repair
+                - **Add to PATH manually:** System Properties > Environment Variables > Add Python folder to PATH
+                - **Reinstall pip:** `python -m ensurepip --upgrade`
 
                 **Check if working:**
                 ```bash
@@ -55,7 +55,7 @@
                 pip --version
                 ```
 
-                What specific issue are you experiencing? (import errors, command not found, version conflicts, etc.)
+                What specific issue are you experiencing? (command not found, import errors, version conflicts, etc.)
             </bad_response>
         </example>
     </instruction>
