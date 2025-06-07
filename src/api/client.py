@@ -39,7 +39,7 @@ class Client:
     client_anthropic = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
     client_openai = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
     # Load system prompt from a local file
-    system_prompt_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "system_prompt.xml")
+    system_prompt_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "system_prompt.txt")
     with open(system_prompt_path, "r", encoding="utf-8") as f:
         system_prompt = f.read().strip()
     logger.info(f"Loaded system prompt from {system_prompt_path}")
@@ -66,39 +66,38 @@ class Client:
             raise Exception(f"Unknown backend: {self.backend}")
         logger.info(f"Backend changed to {self.backend}")
 
-    def get_stream(self, messages, thinking_enabled=True):
+    def get_stream(self, messages, response_mode):
+        """ response_mode: normal, thinking, research """
         logger.debug(f"Sending messages to the API server")
         if self.backend == "anthropic":
-            if thinking_enabled:
+            # Explicit caching for anthropic models
+            system = [{"type": "text", "text": self.system_prompt, "cache_control": {"type": "ephemeral"}}]
+            messages[-1]["content"][-1]["cache_control"] = {"type": "ephemeral"}
+            if mode == "normal":
                 stream = self.client.messages.stream(
-                    system=[{
-                        "type": "text",
-                        "text": self.system_prompt,
-                        "cache_control": {"type": "ephemeral"},
-                    }],
-                    messages=messages,
-                    model="claude-opus-4-20250514",
-                    temperature=1.0,
-                    max_tokens=32000,
-                    thinking={"type": "enabled", "budget_tokens": 31999},
-                )
-            else:
-                stream = self.client.messages.stream(
-                    system=[{
-                        "type": "text",
-                        "text": self.system_prompt,
-                        "cache_control": {"type": "ephemeral"},
-                    }],
+                    system=system,
                     messages=messages,
                     model="claude-sonnet-4-20250514",
                     temperature=1.0,
                     max_tokens=32000,
                     thinking={"type": "disabled"},
                 )
+            elif mode == "thinking":
+                stream = self.client.messages.stream(
+                    system=system,
+                    messages=messages,
+                    model="claude-opus-4-20250514",
+                    temperature=1.0,
+                    max_tokens=32000,
+                    thinking={"type": "enabled", "budget_tokens": 31999},
+                )
+            elif mode == "research":
+                pass
+            
             return stream
         elif self.backend == "openai":
             messages = translate_messages(self.system_prompt, messages)
-            if thinking_enabled:
+            if mode :
                 stream = self.client.chat.completions.create(
                     model="o3",
                     messages=messages,
@@ -113,4 +112,4 @@ class Client:
                 )
             return stream
         else:
-            raise Exception()
+            raise Exception("Unexpected API backend")
