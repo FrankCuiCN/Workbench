@@ -66,3 +66,23 @@ def get_stream(system_prompt, messages, response_mode):
         )
         return stream
     raise Exception("Unexpected response_mode")
+
+
+
+
+
+
+
+
+"""
+                    # Else, if backend is OpenAI
+                    elif self.backend == "openai":
+                        # DEBUG
+                        print(event.type)
+                        # Debug: Identify the first event, and emit thinking
+                        # Debug: Identify the last event, and emit "\n"
+                        if event.type == "response.reasoning_summary_text.delta":
+                            self.signal.emit({"state": "thinking", "payload": None})
+                        if event.type == "response.output_text.delta":
+                            self.signal.emit({"state": "generating", "payload": event.delta})
+"""

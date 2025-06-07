@@ -1,6 +1,7 @@
 import os
 import logging
 import anthropic
+from system_prompt.get_system_prompt import get_system_prompt
 
 logger = logging.getLogger(__name__)
 client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
@@ -32,9 +33,11 @@ def apply_cache_breakpoints(system_prompt, messages):
         messages[idx]["content"][-1]["cache_control"] = {"type": "ephemeral"}
     return system_prompt, messages
 
-def get_stream(system_prompt, messages, response_mode):
+
+def get_stream(messages, response_mode):
     logger.debug(f"Sending messages to the API server")
 
+    system_prompt = get_system_prompt()
     system_prompt, messages = apply_cache_breakpoints(system_prompt, messages)
     
     if response_mode == "normal":
@@ -69,7 +72,7 @@ def get_stream(system_prompt, messages, response_mode):
         stream = client.messages.stream(
             system=system_prompt,
             messages=messages,
-            model="claude-opus-4-20250514",
+            model="claude-sonnet-4-20250514",  # Note: Opus is too expensive for online research
             temperature=1.0,
             max_tokens=32000,
             thinking={"type": "enabled", "budget_tokens": 31999},
@@ -77,3 +80,28 @@ def get_stream(system_prompt, messages, response_mode):
         )
         return stream
     raise Exception("Unexpected response_mode")
+
+
+def run(messages, response_mode, parent):
+    with get_stream(messages, response_mode) as stream:
+        for event in stream:
+            # If stop requested
+            if parent.stop_requested:
+                # Update the logger
+                logger.debug("The task is halting")
+                # Exit ungracefully
+                return False
+            
+            if event.type == "message_start":
+                parent.signal.emit({"state": "thinking", "payload": None})
+            
+            # Issue: There are no line changes between multiple tool calls
+            # Workaround
+            if event.type == "content_block_start":
+                if event.content_block.type == "server_tool_use":
+                    parent.signal.emit({"state": "generating", "payload": "<tool_use>\n"})
+            
+            if event.type == "text":
+                parent.signal.emit({"state": "generating", "payload": event.text})
+    # Exit gracefully
+    return True

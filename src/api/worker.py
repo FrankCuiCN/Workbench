@@ -1,23 +1,50 @@
+import os
 import logging
 import threading
 from PySide6.QtCore import QObject, Signal
+from api import utils_anthropic
 
 logger = logging.getLogger(__name__)
 
 class Worker(QObject):
-    # Unified signal for all worker events
     signal = Signal(dict)
-    def __init__(self, client, messages, thinking_enabled=True, parent=None):
+    
+    def __init__(self, backend, messages, response_mode, parent=None):
         super().__init__(parent)
         # Initialize attributes
-        self.client = client
+        self.backend = backend
         self.messages = messages
-        self.thinking_enabled = thinking_enabled
+        self.response_mode = response_mode
         self.stop_requested = False
-        # debug: a bit convoluted
-        # Preferably, the client should provide a unified interface
-        #     so that worker does not need to care about the backend
-        self.backend = client.backend
+        # Backend handling
+        if self.backend == "anthropic":
+            self.get_stream = utils_anthropic.get_stream
+        else:
+            raise Exception("Unexpected backend")
+
+    def _background_task(self):
+        try:
+            # Emit initial state
+            self.signal.emit({"state": "waiting", "payload": None})
+            
+            if self.backend == "anthropic":
+                graceful = utils_anthropic.run(self.messages, self.response_mode, parent=self)
+            else:
+                raise Exception("Unexpected backend")
+            
+            # Note: "ending" implies a graceful exit
+            if graceful:
+                self.signal.emit({"state": "ending", "payload": None})
+        except Exception as e:
+            logger.error(f"Worker exception: {e}")
+            self.signal.emit({"state": "error", "payload": str(e)})
+
+    
+    def _background_task_with_cleanup(self):
+        self._background_task()
+        # Self-Deletion
+        logger.debug("Calling deleteLater on Worker")
+        self.deleteLater()
 
     def start(self):
         thread = threading.Thread(target=self._background_task_with_cleanup)
@@ -27,45 +54,3 @@ class Worker(QObject):
     def request_stop(self):
         logger.debug("The task is requested to stop")
         self.stop_requested = True
-
-    def _background_task_with_cleanup(self):
-        self._background_task()
-        # Self-Deletion
-        logger.debug("Calling deleteLater on Worker")
-        self.deleteLater()
-
-    def _background_task(self):
-        try:
-            # Emit initial state
-            self.signal.emit({"state": "waiting", "payload": None})
-            # Process the stream
-            with self.client.get_stream(self.messages, self.thinking_enabled) as stream:
-                for event in stream:
-                    # If stop requested
-                    if self.stop_requested:
-                        logger.debug("The task is halting")
-                        # End the background task
-                        return
-                    # If backend is Anthropic
-                    if self.backend == "anthropic":
-                        # If thinking related
-                        condition_1 = (event.type == "content_block_start" and hasattr(event, 'content_block') and event.content_block.type in ("thinking", "redacted_thinking"))
-                        condition_2 = (event.type == "content_block_delta" and hasattr(event, 'delta') and event.delta.type == "thinking_delta")
-                        condition_3 = (event.type == "content_block_stop" and hasattr(event, 'content_block') and event.content_block.type in ("thinking", "redacted_thinking"))
-                        if condition_1 or condition_2 or condition_3:
-                            self.signal.emit({"state": "thinking", "payload": None})
-                        # If not thinking related
-                        else:
-                            # For text deltas, emit generating state with text content
-                            if (event.type == "content_block_delta") and (event.delta.type == "text_delta"):
-                                self.signal.emit({"state": "generating", "payload": event.delta.text})
-                    # Else, if backend is OpenAI
-                    elif self.backend == "openai":
-                        delta = event.choices[0].delta.content
-                        if delta is not None:
-                            self.signal.emit({"state": "generating", "payload": delta})
-            self.signal.emit({"state": "ending", "payload": None})
-            return
-        except Exception as e:
-            logger.error(f"Worker exception: {e}")
-            self.signal.emit({"state": "error", "payload": str(e)})
