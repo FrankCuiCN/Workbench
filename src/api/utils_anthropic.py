@@ -25,9 +25,9 @@ def apply_cache_breakpoints(system_prompt, messages):
     elif num_message == 2:
         idx_all = [0, 1]
     elif num_message >= 3:
-        idx_all = [idx * (num_message - 1) // 2 for idx in range(3)]
+        idx_all = [(num_message - 1) // 3, (num_message - 1) * 2 // 3, num_message - 1]
     else:
-        Exception("Unexpected num_message")
+        raise Exception("Unexpected num_message")
     # Note: idx_all always includes the last message
     for idx in idx_all:
         messages[idx]["content"][-1]["cache_control"] = {"type": "ephemeral"}
@@ -96,10 +96,9 @@ def run(messages, response_mode, parent):
             if event.type == "message_start":
                 parent.signal.emit({"state": "thinking", "payload": None})
             
-            # Issue: When the model writes text and then calls a tool, the API stream does not
-            #   include a newline, causing later text be directed appended.
+            # Issue: Text blocks before and after a tool call are directly appended
             # Workaround: We use a flag to detect when a text event is followed by a
-            #   tool use event and manually insert a "\n\n" to create a visual break.
+            #   tool use event and manually insert a "\n\n" to create a visual break
             if event.type == "content_block_start":
                 if event.content_block.type == "server_tool_use":
                     if separate_next_tool_call:
