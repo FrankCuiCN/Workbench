@@ -1,7 +1,9 @@
 import logging
 import threading
 from PySide6.QtCore import QObject, Signal
-from api import utils_anthropic, utils_openai
+from api import utils_anthropic
+from api import utils_openai
+from api import utils_gemini
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +27,8 @@ class Worker(QObject):
                 graceful = utils_anthropic.run(self.messages, self.response_mode, parent=self)
             elif self.backend == "openai":
                 graceful = utils_openai.run(self.messages, self.response_mode, parent=self)
+            elif self.backend == "gemini":
+                graceful = utils_gemini.run(self.messages, self.response_mode, parent=self)
             else:
                 raise Exception("Unexpected backend")
             
