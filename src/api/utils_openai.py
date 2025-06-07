@@ -1,6 +1,9 @@
 import os
+import logging
 from openai import OpenAI
+from system_prompt.get_system_prompt import get_system_prompt
 
+logger = logging.getLogger(__name__)
 client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
 
@@ -30,8 +33,12 @@ def translate_messages(system_prompt, messages):
     return messages_new
 
 
-def get_stream(system_prompt, messages, response_mode):
+def get_stream(messages, response_mode):
+    logger.debug(f"Sending messages to the API server")
+    
+    system_prompt = get_system_prompt()
     messages = translate_messages(system_prompt, messages)
+    
     if response_mode == "normal":
         stream = client.responses.create(
             model="gpt-4.1",
@@ -40,6 +47,7 @@ def get_stream(system_prompt, messages, response_mode):
             store=False,
         )
         return stream
+    
     if response_mode == "thinking":
         stream = client.responses.create(
             model="o3",
@@ -49,6 +57,7 @@ def get_stream(system_prompt, messages, response_mode):
             store=False,
         )
         return stream
+    
     if response_mode == "research":
         stream = client.responses.create(
             model="gpt-4.1",
@@ -68,21 +77,20 @@ def get_stream(system_prompt, messages, response_mode):
     raise Exception("Unexpected response_mode")
 
 
-
-
-
-
-
-
-"""
-                    # Else, if backend is OpenAI
-                    elif self.backend == "openai":
-                        # DEBUG
-                        print(event.type)
-                        # Debug: Identify the first event, and emit thinking
-                        # Debug: Identify the last event, and emit "\n"
-                        if event.type == "response.reasoning_summary_text.delta":
-                            self.signal.emit({"state": "thinking", "payload": None})
-                        if event.type == "response.output_text.delta":
-                            self.signal.emit({"state": "generating", "payload": event.delta})
-"""
+def run(messages, response_mode, parent):
+    with get_stream(messages, response_mode) as stream:
+        for event in stream:
+            # If stop requested
+            if parent.stop_requested:
+                # Update the logger
+                logger.debug("The task is halting")
+                # Exit ungracefully
+                return False
+            
+            if event.type == "response.reasoning_summary_text.delta":
+                parent.signal.emit({"state": "thinking", "payload": None})
+            
+            if event.type == "response.output_text.delta":
+                parent.signal.emit({"state": "generating", "payload": event.delta})
+    # Exit gracefully
+    return True

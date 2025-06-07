@@ -1,8 +1,7 @@
-import os
 import logging
 import threading
 from PySide6.QtCore import QObject, Signal
-from api import utils_anthropic
+from api import utils_anthropic, utils_openai
 
 logger = logging.getLogger(__name__)
 
@@ -16,11 +15,6 @@ class Worker(QObject):
         self.messages = messages
         self.response_mode = response_mode
         self.stop_requested = False
-        # Backend handling
-        if self.backend == "anthropic":
-            self.get_stream = utils_anthropic.get_stream
-        else:
-            raise Exception("Unexpected backend")
 
     def _background_task(self):
         try:
@@ -29,6 +23,8 @@ class Worker(QObject):
             
             if self.backend == "anthropic":
                 graceful = utils_anthropic.run(self.messages, self.response_mode, parent=self)
+            elif self.backend == "openai":
+                graceful = utils_openai.run(self.messages, self.response_mode, parent=self)
             else:
                 raise Exception("Unexpected backend")
             
