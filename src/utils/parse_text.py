@@ -60,8 +60,7 @@ def parse_text(text):
             for part in parts:
                 if re.match(r'<8442d621>.*?</8442d621>', part):
                     # Extract base64 string from image tag
-                    base64_str = re.match(r'<8442d621>(.*?)</8442d621>',
-                                          part).group(1)
+                    base64_str = re.match(r'<8442d621>(.*?)</8442d621>', part).group(1)
                     content_list.append({
                         "type": "image",
                         "source": {
