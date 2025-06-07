@@ -97,13 +97,14 @@ def run(messages, response_mode, parent):
                 parent.signal.emit({"state": "thinking", "payload": None})
             
             # Issue: Text blocks before and after a tool call are directly appended
-            # Workaround: We use a flag to detect when a text event is followed by a
-            #   tool use event and manually insert a "\n\n" to create a visual break
+            # Workaround: We use a flag to detect when a text event is followed by a tool use event
             if event.type == "content_block_start":
                 if event.content_block.type == "server_tool_use":
                     if separate_next_tool_call:
-                        parent.signal.emit({"state": "generating", "payload": "\n\n"})
+                        parent.signal.emit({"state": "generating", "payload": "\n\nSearching...\n\n"})
                         separate_next_tool_call = False
+                    else:
+                        parent.signal.emit({"state": "generating", "payload": "Searching...\n\n"})
             
             if event.type == "text":
                 parent.signal.emit({"state": "generating", "payload": event.text})
