@@ -72,7 +72,7 @@ def get_stream(messages, response_mode):
         stream = client.messages.stream(
             system=system_prompt,
             messages=messages,
-            model="claude-sonnet-4-20250514",  # Note: Opus is too expensive for online research
+            model="claude-sonnet-4-20250514",  # Note: Opus is too expensive for multi-turn online research
             temperature=1.0,
             max_tokens=32000,
             thinking={"type": "enabled", "budget_tokens": 31999},
@@ -83,6 +83,7 @@ def get_stream(messages, response_mode):
 
 
 def run(messages, response_mode, parent):
+    separate_next_tool_call = False
     with get_stream(messages, response_mode) as stream:
         for event in stream:
             # If stop requested
@@ -95,13 +96,18 @@ def run(messages, response_mode, parent):
             if event.type == "message_start":
                 parent.signal.emit({"state": "thinking", "payload": None})
             
-            # Issue: There are no line changes between multiple tool calls
-            # Workaround
+            # Issue: When the model writes text and then calls a tool, the API stream does not
+            #   include a newline, causing later text be directed appended.
+            # Workaround: We use a flag to detect when a text event is followed by a
+            #   tool use event and manually insert a "\n\n" to create a visual break.
             if event.type == "content_block_start":
                 if event.content_block.type == "server_tool_use":
-                    parent.signal.emit({"state": "generating", "payload": "<tool_use>\n"})
+                    if separate_next_tool_call:
+                        parent.signal.emit({"state": "generating", "payload": "\n\n"})
+                        separate_next_tool_call = False
             
             if event.type == "text":
                 parent.signal.emit({"state": "generating", "payload": event.text})
+                separate_next_tool_call = True
     # Exit gracefully
     return True
