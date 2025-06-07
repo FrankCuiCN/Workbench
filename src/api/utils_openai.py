@@ -7,16 +7,15 @@ logger = logging.getLogger(__name__)
 client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
 
-def translate_messages(system_prompt, messages):
+def translate_messages(messages):
     """Translate from Anthropic to OpenAI format"""
-    # Step 1: Add system prompt as a developer message
-    messages_new = [{"role": "developer", "content": system_prompt}]
-    # Step 2: Process each message
+    messages_new = []
     for message in messages:
-        content_old = message["content"]
-        assert isinstance(content_old, list), "content must be a list"
+        role    = message["role"]
+        content = message["content"]
+        assert isinstance(content, list), "content must be a list"
         content_new = []
-        for item in message["content"]:
+        for item in content:
             if item["type"] == "text":
                 content_new.append({
                     "type": "input_text",
@@ -29,7 +28,7 @@ def translate_messages(system_prompt, messages):
                     "type": "input_image",
                     "image_url": f"data:{media_type};base64,{base64_data}",
                 })
-        messages_new.append({"role": "user", "content": content_new})
+        messages_new.append({"role": role, "content": content_new})
     return messages_new
 
 
@@ -37,11 +36,12 @@ def get_stream(messages, response_mode):
     logger.debug(f"Sending messages to the API server")
     
     system_prompt = get_system_prompt()
-    messages = translate_messages(system_prompt, messages)
+    messages = translate_messages(messages)
     
     if response_mode == "normal":
         stream = client.responses.create(
             model="gpt-4.1",
+            instructions=system_prompt,
             input=messages,
             stream=True,
             store=False,
@@ -51,6 +51,7 @@ def get_stream(messages, response_mode):
     if response_mode == "thinking":
         stream = client.responses.create(
             model="o3",
+            instructions=system_prompt,
             input=messages,
             stream=True,
             reasoning={"effort": "high", "summary": "detailed"},
@@ -61,6 +62,7 @@ def get_stream(messages, response_mode):
     if response_mode == "research":
         stream = client.responses.create(
             model="gpt-4.1",
+            instructions=system_prompt,
             input=messages,
             stream=True,
             store=False,
