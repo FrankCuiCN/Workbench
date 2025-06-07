@@ -32,7 +32,7 @@ class LocalStatusBar(QStatusBar):
         self.internal_state = status_text
     
     def update_read_only_status(self, read_only):
-        # Workaround: Pad one whitespace on the right
+        # Workaround: Add one space to the right
         # Background: Rare display issues may cut-off 1~2 characters
         read_only_text = "Read-Only: ON " if read_only else "Read-Only: OFF "
         self.read_only_status.setText(read_only_text)

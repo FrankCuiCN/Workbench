@@ -19,7 +19,7 @@ class GlobalStatusBar(QStatusBar):
     
     def update_backend_status(self, backend):
         if backend == "anthropic":
-            # Workaround: Pad one whitespace on the right
+            # Workaround: Add one space to the right
             # Background: Rare display issues may cut-off 1~2 characters
             self.backend_status.setText("Backend: Anthropic (F10) ")
         elif backend == "openai":
