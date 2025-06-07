@@ -1,8 +1,7 @@
 import logging
 from enum import Enum, auto
 from PySide6.QtCore import QEvent, Qt
-from PySide6.QtWidgets import QWidget, QVBoxLayout
-from PySide6.QtWidgets import QDialog, QHBoxLayout, QLineEdit, QPushButton, QLabel
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QDialog, QLineEdit
 from api.worker import Worker
 from ui.status_bar.local_status_bar import LocalStatusBar
 from ui.text_editor.text_editor import TextEditor
@@ -64,7 +63,7 @@ class Session(QWidget):
         self.text_editor.setReadOnly(enabled)
         self.status_bar.update_read_only_status(enabled)
 
-    def generate_response(self, thinking_enabled=False):
+    def generate_response(self, response_mode):
         # Update UI state to waiting and set text editor to read only
         self.set_session_state(SessionState.WAITING)
         self.set_read_only(True)
@@ -92,7 +91,7 @@ class Session(QWidget):
                 index -= 1
             self.number_of_trailing_newline_characters = trailing_newlines
             # Create a worker
-            self.worker = Worker(self.workspace.client, messages, thinking_enabled, parent=self)
+            self.worker = Worker(self.workspace.backend, messages, response_mode, parent=self)
             # Connect the signal
             self.worker.signal.connect(self.on_worker_event)
             # Start the worker
@@ -140,33 +139,54 @@ class Session(QWidget):
     def eventFilter(self, source, event):
         if (source is self.text_editor) and (event.type() == QEvent.KeyPress):
             mods, key = event.modifiers(), event.key()
-            if (mods == Qt.ControlModifier) and (key == Qt.Key_Return):
-                self.key_press_ctrl_enter()
-                return True
-            elif (mods == Qt.ShiftModifier) and (key == Qt.Key_Return):
-                self.key_press_shift_enter()
-                return True
-            elif (not mods) and (key == Qt.Key_Tab):
-                self.key_press_tab()
-                return True
-            elif (not mods) and (key == Qt.Key_Escape):
-                self.key_press_escape()
-                return True
-            elif (mods == Qt.ControlModifier) and (key == Qt.Key_F):
-                self.show_search_dialog()
-                return True
-            elif (not mods) and (key == Qt.Key_F3):
-                self.find_next()
-                return True
+            # Ctrl+Enter
+            if mods == Qt.ControlModifier:
+                if key == Qt.Key_Return:
+                    self.key_press_ctrl_enter()
+                    return True
+            # Shift+Enter
+            if mods == Qt.ShiftModifier:
+                if key == Qt.Key_Return:
+                    self.key_press_shift_enter()
+                    return True
+            # Ctrl+Shift+Enter
+            if mods == (Qt.ControlModifier | Qt.ShiftModifier):
+                if key == Qt.Key_Return:
+                    self.key_press_ctrl_shift_enter()
+                    return True
+            # Tab
+            if not mods:
+                if key == Qt.Key_Tab:
+                    self.key_press_tab()
+                    return True
+            # Esc
+            if not mods:
+                if key == Qt.Key_Escape:
+                    self.key_press_escape()
+                    return True
+            # Ctrl+F
+            if mods == Qt.ControlModifier:
+                if key == Qt.Key_F:
+                    self.show_search_dialog()
+                    return True
+            # F3
+            if not mods:
+                if key == Qt.Key_F3:
+                    self.find_next()
+                    return True
         return super().eventFilter(source, event)
     
     def key_press_ctrl_enter(self):
         if self.session_state == SessionState.IDLE:
-            self.generate_response(thinking_enabled=False)
+            self.generate_response(response_mode="normal")
     
     def key_press_shift_enter(self):
         if self.session_state == SessionState.IDLE:
-            self.generate_response(thinking_enabled=True)
+            self.generate_response(response_mode="thinking")
+
+    def key_press_ctrl_shift_enter(self):
+        if self.session_state == SessionState.IDLE:
+            self.generate_response(response_mode="research")
     
     def key_press_tab(self):
         self.text_editor.insertPlainText("    ")

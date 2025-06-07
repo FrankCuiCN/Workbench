@@ -33,7 +33,7 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.workspace)
         # Initialize the global status bar
         self.global_status_bar = GlobalStatusBar(self)
-        self.global_status_bar.update_backend_status(self.workspace.client.backend)
+        self.global_status_bar.update_backend_status(self.workspace.backend)
         layout.addWidget(self.global_status_bar)
         # Focus on the workspace
         self.workspace.focus()
