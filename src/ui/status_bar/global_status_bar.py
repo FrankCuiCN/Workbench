@@ -24,6 +24,8 @@ class GlobalStatusBar(QStatusBar):
             self.backend_status.setText("Backend: Anthropic (F10) ")
         elif backend == "openai":
             self.backend_status.setText("Backend: OpenAI (F10) ")
+        elif backend == "gemini":
+            self.backend_status.setText("Backend: Gemini (F10) ")
         else:
             raise Exception("Unexpected API backend")
     
