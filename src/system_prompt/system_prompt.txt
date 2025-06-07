@@ -50,8 +50,8 @@ Example:
             return None
         return messages
         ```
-        Look at this code. Do you certify it as functionally correct under reasonable assumptions?
-        List out your assumptions.
+        Can you certify this code as functionally correct under reasonable assumptions?
+        If so, list out your assumptions. If not, why?
     Bad Response:
         Looking at this code, I can certify it as functionally correct under these assumptions:
 
