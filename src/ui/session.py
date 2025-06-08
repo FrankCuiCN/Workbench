@@ -1,7 +1,6 @@
 import logging
 from enum import Enum, auto
 from PySide6.QtCore import QEvent, Qt
-from PySide6.QtGui import QTextCursor
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QDialog, QLineEdit
 from api.worker import Worker
 from ui.status_bar.local_status_bar import LocalStatusBar
@@ -34,7 +33,7 @@ class Session(QWidget):
         # Add multiple lines to the end
         # Note: This is a workaround to enable scrolling beyond the last line
         cursor_position = self.text_editor.textCursor().position()
-        self.text_editor.insertPlainText(25 * "\n")  # Add empty lines
+        self.text_editor.insertPlainText(20 * "\n")  # Add empty lines
         cursor = self.text_editor.textCursor()  # Get current text cursor
         cursor.setPosition(cursor_position)     # Set cursor to stored position
         self.text_editor.setTextCursor(cursor)  # Apply cursor position to editor
