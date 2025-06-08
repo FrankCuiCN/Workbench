@@ -80,9 +80,8 @@ class AnimatedInsertionManager:
             cursor = QTextCursor(self.text_editor.document())
             # Move the cursor to the end of the document.
             cursor.movePosition(QTextCursor.End)
-            # If an insertion offset exists, move the cursor backwards by that many characters.
-            if self.insertion_offset > 0:
-                cursor.movePosition(QTextCursor.PreviousCharacter, QTextCursor.MoveAnchor, self.insertion_offset)
+            # Move the cursor backwards by 'insertion_offset' characters.
+            cursor.movePosition(QTextCursor.PreviousCharacter, QTextCursor.MoveAnchor, self.insertion_offset)
             # Insert the character at the current cursor position.
             cursor.insertText(char)
             # Move to the next character in the current text chunk.
