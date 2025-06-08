@@ -9,10 +9,10 @@ class SyntaxHighlighter(QSyntaxHighlighter):
     def __init__(self, document):
         super().__init__(document)
         self.user_format = QTextCharFormat()
-        self.user_format.setForeground(QColor(0, 200, 0))
+        self.user_format.setForeground(QColor(115, 230, 115))  # Muted green
         self.user_format.setFontWeight(QFont.Bold)
         self.assistant_format = QTextCharFormat()
-        self.assistant_format.setForeground(QColor(200, 0, 0))
+        self.assistant_format.setForeground(QColor(230, 115, 115))  # Muted red
         self.assistant_format.setFontWeight(QFont.Bold)
 
     def highlightBlock(self, text):

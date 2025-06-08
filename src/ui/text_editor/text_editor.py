@@ -5,6 +5,7 @@ from typing import Callable
 from PySide6.QtWidgets import QTextEdit
 from PySide6.QtCore import Qt, QUrl, QByteArray, QBuffer, QTimer
 from PySide6.QtGui import QFont, QImage, QTextDocument, QTextImageFormat
+from PySide6.QtGui import QColor, QPalette
 from ui.text_editor.syntax_highlighter import SyntaxHighlighter
 from ui.text_editor.animated_insertion_manager import AnimatedInsertionManager
 
@@ -24,6 +25,11 @@ class TextEditor(QTextEdit):
         font.setFeature(QFont.Tag("liga"), 0)
         font.setFeature(QFont.Tag("dlig"), 0)
         self.setFont(font)
+        # Set color
+        pal = self.palette()
+        pal.setColor(QPalette.Text, QColor(216, 222, 233))  # Text
+        pal.setColor(QPalette.Base, QColor(48, 56, 65))     # Background
+        self.setPalette(pal)
         # Initialize external modules
         self.highlighter = SyntaxHighlighter(self.document())
         self.animation_manager = AnimatedInsertionManager(self)
