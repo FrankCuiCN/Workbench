@@ -50,8 +50,7 @@ def get_stream(messages, response_mode):
             thinking={"type": "disabled"},
         )
         return stream
-    
-    if response_mode == "thinking":
+    elif response_mode == "thinking":
         stream = client.messages.stream(
             system=system_prompt,
             messages=messages,
@@ -61,8 +60,7 @@ def get_stream(messages, response_mode):
             thinking={"type": "enabled", "budget_tokens": 31999},
         )
         return stream
-    
-    if response_mode == "research":
+    elif response_mode == "research":
         tools = [{
             "type": "web_search_20250305",
             "name": "web_search",
@@ -79,7 +77,8 @@ def get_stream(messages, response_mode):
             tools=tools,
         )
         return stream
-    raise Exception("Unexpected response_mode")
+    else:
+        raise Exception("Unexpected response_mode")
 
 
 def run(messages, response_mode, parent):

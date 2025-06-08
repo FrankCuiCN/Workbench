@@ -51,8 +51,7 @@ def get_stream(messages, response_mode):
             store=False,
         )
         return stream
-    
-    if response_mode == "thinking":
+    elif response_mode == "thinking":
         stream = client.responses.create(
             model="o3",
             instructions=system_prompt,
@@ -62,8 +61,7 @@ def get_stream(messages, response_mode):
             store=False,
         )
         return stream
-    
-    if response_mode == "research":
+    elif response_mode == "research":
         stream = client.responses.create(
             model="gpt-4.1",
             instructions=system_prompt,
@@ -80,7 +78,8 @@ def get_stream(messages, response_mode):
             }],
         )
         return stream
-    raise Exception("Unexpected response_mode")
+    else:
+        raise Exception("Unexpected response_mode")
 
 
 def run(messages, response_mode, parent):
