@@ -5,7 +5,7 @@ logger = logging.getLogger(__name__)
 
 
 def parse_text(text):
-    # Issue: Current layout appends \n characters to allow scrolling past the last line
+    # Issue: Current layout appends a number of newline characters to allow scrolling past the last line
     # Workaround: Strip whitespace characters
     text = text.strip()
     

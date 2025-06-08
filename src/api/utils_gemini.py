@@ -103,6 +103,7 @@ def run(messages, response_mode, parent):
         # If event.part.thought is True, it indicates a thought segment.
         # Python's short-circuiting ensures the second getattr is not called on None.
         if part and getattr(part, "thought", False):
+            # Known Issue: This part is not invoked
             parent.signal.emit({"state": "thinking", "payload": text_event})
         else:
             # If no thought metadata is available, default to the "generating" state.
