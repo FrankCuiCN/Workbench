@@ -99,7 +99,7 @@ def run(messages, response_mode, parent):
             if event.type == "message_start":
                 parent.signal.emit({"state": "thinking", "payload": None})
             
-            # Issue: Text blocks before and after a tool call are directly appended
+            # Known Issue: Text blocks before and after a tool call are directly appended
             # Workaround: We use a flag to detect when a text event is followed by a tool use event
             if event.type == "content_block_start":
                 if event.content_block.type == "server_tool_use":
