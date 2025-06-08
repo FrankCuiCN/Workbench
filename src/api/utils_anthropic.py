@@ -7,6 +7,10 @@ logger = logging.getLogger(__name__)
 client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
 
+# Known Issue: Large Text Block Cache Invalidation
+#   Anthropic's caching operates on a per-block basis. If a message contains a
+#   very large, single block of text (e.g., a 10k token research paper), even
+#   modifying the end of that text invalidates the cache for the entire block.
 def apply_cache_breakpoints(system_prompt, messages):
     """
     Apply 4 cache breakpoints to maximize cache hits:
