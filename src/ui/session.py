@@ -200,11 +200,6 @@ class Session(QWidget):
                 self.text_editor.flush_animation(self.reset_ui_state)
     
     def reset_ui_state(self):
-        # Place the cursor at the end (respecting number_of_trailing_newline_characters)
-        cursor = self.text_editor.textCursor()
-        cursor.movePosition(QTextCursor.End)
-        cursor.movePosition(QTextCursor.PreviousCharacter, QTextCursor.MoveAnchor, self.number_of_trailing_newline_characters)
-        self.text_editor.setTextCursor(cursor)
         # Turn off read-only
         self.set_read_only(False)
         # Update session state
