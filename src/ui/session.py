@@ -1,6 +1,7 @@
 import logging
 from enum import Enum, auto
 from PySide6.QtCore import QEvent, Qt
+from PySide6.QtGui import QTextCursor
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QDialog, QLineEdit
 from api.worker import Worker
 from ui.status_bar.local_status_bar import LocalStatusBar
@@ -33,7 +34,7 @@ class Session(QWidget):
         # Add multiple lines to the end
         # Note: This is a workaround to enable scrolling beyond the last line
         cursor_position = self.text_editor.textCursor().position()
-        self.text_editor.insertPlainText(50 * "\n")  # Add empty lines
+        self.text_editor.insertPlainText(25 * "\n")  # Add empty lines
         cursor = self.text_editor.textCursor()  # Get current text cursor
         cursor.setPosition(cursor_position)     # Set cursor to stored position
         self.text_editor.setTextCursor(cursor)  # Apply cursor position to editor
@@ -119,20 +120,14 @@ class Session(QWidget):
             self.worker = None
             self.text_editor.insert_at_end("\nUser:\n", self.number_of_trailing_newline_characters)
             # Flush the text animation, and then reset UI state
-            def _callback():
-                self.set_read_only(False)
-                self.set_session_state(SessionState.IDLE)
-            self.text_editor.flush_animation(_callback)
+            self.text_editor.flush_animation(self.reset_ui_state)
         # If the worker experienced an error
         elif state == "error":
             self.worker = None
             # Insert the error message
             self.text_editor.insert_at_end("\n<Error: {}>".format(payload), self.number_of_trailing_newline_characters)
             # Flush the text animation, and then reset UI state
-            def _callback():
-                self.set_read_only(False)
-                self.set_session_state(SessionState.IDLE)
-            self.text_editor.flush_animation(_callback)
+            self.text_editor.flush_animation(self.reset_ui_state)
         else:
             raise Exception()
     
@@ -202,11 +197,19 @@ class Session(QWidget):
                 if self.session_state == SessionState.GENERATING:
                     self.text_editor.insert_at_end("\nUser:\n", self.number_of_trailing_newline_characters)
                 # Flush the text animation, and then reset UI state
-                def _callback():
-                    self.set_read_only(False)
-                    self.set_session_state(SessionState.IDLE)
-                self.text_editor.flush_animation(_callback)
-
+                self.text_editor.flush_animation(self.reset_ui_state)
+    
+    def reset_ui_state(self):
+        # Place the cursor at the end (respecting number_of_trailing_newline_characters)
+        cursor = self.text_editor.textCursor()
+        cursor.movePosition(QTextCursor.End)
+        cursor.movePosition(QTextCursor.PreviousCharacter, QTextCursor.MoveAnchor, self.number_of_trailing_newline_characters)
+        self.text_editor.setTextCursor(cursor)
+        # Turn off read-only
+        self.set_read_only(False)
+        # Update session state
+        self.set_session_state(SessionState.IDLE)
+    
     def get_data(self):
         # Note: get_data() should not interfere with session activities
         return {"text_content": self.text_editor.toPlainText()}
