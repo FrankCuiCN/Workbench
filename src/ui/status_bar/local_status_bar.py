@@ -4,9 +4,7 @@ from PySide6.QtWidgets import QStatusBar, QLabel
 
 class LocalStatusBar(QStatusBar):
     """Local status bar for individual session status"""
-    
-    def __init__(self, parent=None):
-        """Initialize the local status bar"""
+    def __init__(self, parent):
         super().__init__(parent)
         # Configuration
         self.setSizeGripEnabled(False)
@@ -18,7 +16,7 @@ class LocalStatusBar(QStatusBar):
         
     def update_session_status(self, status):
         if status == "idle":
-            status_text = "Idle        |  Ctrl+Enter: Fast Reply  |  Shift+Enter: Think More"
+            status_text = "Idle        |  Ctrl+Enter: Fast Reply  |  Shift+Enter: Think More  |  Ctrl+Shift+Enter: Online Research"
         elif status == "waiting":
             status_text = "Waiting     |  Press Esc to interrupt"
         elif status == "thinking":
@@ -32,7 +30,7 @@ class LocalStatusBar(QStatusBar):
         self.internal_state = status_text
     
     def update_read_only_status(self, read_only):
-        # Workaround: Pad one whitespace on the right
+        # Workaround: Add one space to the right
         # Background: Rare display issues may cut-off 1~2 characters
         read_only_text = "Read-Only: ON " if read_only else "Read-Only: OFF "
         self.read_only_status.setText(read_only_text)

@@ -2,7 +2,6 @@ import logging
 from PySide6.QtWidgets import QTabWidget
 from PySide6.QtGui import QShortcut, QKeySequence
 from ui.session import Session
-from api.client import Client
 
 logger = logging.getLogger(__name__)
 
@@ -10,11 +9,12 @@ logger = logging.getLogger(__name__)
 class Workspace(QTabWidget):
     """Workspace for handling multiple sessions."""
     def __init__(self, parent):
-        super().__init__(parent)
+        # Note: Workspace relies on the self-deletion pattern for clean-up
+        super().__init__(parent=None)
         # Define attributes
         self.main_window = parent
         self.closed_sessions = []  # Store recently closed sessions
-        self.client = Client("anthropic")  # Default backend
+        self.backend = "anthropic"  # Default backend
         # Configuration
         self.setTabsClosable(True)  # Enable close buttons
         self.setMovable(True)       # Allow tabs to be reordered
@@ -126,13 +126,19 @@ class Workspace(QTabWidget):
     
     def change_api_backend(self):
         """Change API backend for all sessions"""
-        if self.client.backend == "anthropic":
-            self.client.change_backend("openai")
+        # Loop through available backends
+        if self.backend == "anthropic":
+            self.backend = "openai"
+        elif self.backend == "openai":
+            self.backend = "gemini"
+        elif self.backend == "gemini":
+            self.backend = "anthropic"
         else:
-            self.client.change_backend("anthropic")
+            raise Exception(f"Unexpected backend: {self.backend}")
         # Update the global status bar
-        self.main_window.global_status_bar.update_backend_status(self.client.backend)
-        logger.debug(f"Backend changed to: {self.client.backend}")
+        self.main_window.global_status_bar.update_backend_status(self.backend)
+        # Update logger
+        logger.debug(f"Backend changed to: {self.backend}")
     
     def clean_up_resources(self):
         logger.debug(f"Cleaning up resources for {self.count()} sessions")

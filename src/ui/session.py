@@ -1,8 +1,7 @@
 import logging
 from enum import Enum, auto
 from PySide6.QtCore import QEvent, Qt
-from PySide6.QtWidgets import QWidget, QVBoxLayout
-from PySide6.QtWidgets import QDialog, QHBoxLayout, QLineEdit, QPushButton, QLabel
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QDialog, QLineEdit
 from api.worker import Worker
 from ui.status_bar.local_status_bar import LocalStatusBar
 from ui.text_editor.text_editor import TextEditor
@@ -21,7 +20,8 @@ class SessionState(Enum):
 class Session(QWidget):
     """A single instance of a text editing session"""
     def __init__(self, parent):
-        super().__init__(parent)
+        # Note: Session relies on the self-deletion pattern for clean-up
+        super().__init__(parent=None)
         # Define attributes
         self.workspace = parent
         self.search_text = ""
@@ -29,12 +29,12 @@ class Session(QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         # Create text editor
-        self.text_editor = TextEditor(self)
+        self.text_editor = TextEditor()
         self.text_editor.insertPlainText("User:\n")
         # Add multiple lines to the end
         # Note: This is a workaround to enable scrolling beyond the last line
         cursor_position = self.text_editor.textCursor().position()
-        self.text_editor.insertPlainText(50 * "\n")  # Add empty lines
+        self.text_editor.insertPlainText(20 * "\n")  # Add empty lines
         cursor = self.text_editor.textCursor()  # Get current text cursor
         cursor.setPosition(cursor_position)     # Set cursor to stored position
         self.text_editor.setTextCursor(cursor)  # Apply cursor position to editor
@@ -64,7 +64,7 @@ class Session(QWidget):
         self.text_editor.setReadOnly(enabled)
         self.status_bar.update_read_only_status(enabled)
 
-    def generate_response(self, thinking_enabled=False):
+    def generate_response(self, response_mode):
         # Update UI state to waiting and set text editor to read only
         self.set_session_state(SessionState.WAITING)
         self.set_read_only(True)
@@ -92,7 +92,7 @@ class Session(QWidget):
                 index -= 1
             self.number_of_trailing_newline_characters = trailing_newlines
             # Create a worker
-            self.worker = Worker(self.workspace.client, messages, thinking_enabled, parent=self)
+            self.worker = Worker(self.workspace.backend, messages, response_mode)
             # Connect the signal
             self.worker.signal.connect(self.on_worker_event)
             # Start the worker
@@ -120,53 +120,68 @@ class Session(QWidget):
             self.worker = None
             self.text_editor.insert_at_end("\nUser:\n", self.number_of_trailing_newline_characters)
             # Flush the text animation, and then reset UI state
-            def _callback():
-                self.set_read_only(False)
-                self.set_session_state(SessionState.IDLE)
-            self.text_editor.flush_animation(_callback)
+            self.text_editor.flush_animation(self.reset_ui_state)
         # If the worker experienced an error
         elif state == "error":
             self.worker = None
             # Insert the error message
             self.text_editor.insert_at_end("\n<Error: {}>".format(payload), self.number_of_trailing_newline_characters)
             # Flush the text animation, and then reset UI state
-            def _callback():
-                self.set_read_only(False)
-                self.set_session_state(SessionState.IDLE)
-            self.text_editor.flush_animation(_callback)
+            self.text_editor.flush_animation(self.reset_ui_state)
         else:
             raise Exception()
     
     def eventFilter(self, source, event):
         if (source is self.text_editor) and (event.type() == QEvent.KeyPress):
             mods, key = event.modifiers(), event.key()
-            if (mods == Qt.ControlModifier) and (key == Qt.Key_Return):
-                self.key_press_ctrl_enter()
-                return True
-            elif (mods == Qt.ShiftModifier) and (key == Qt.Key_Return):
-                self.key_press_shift_enter()
-                return True
-            elif (not mods) and (key == Qt.Key_Tab):
-                self.key_press_tab()
-                return True
-            elif (not mods) and (key == Qt.Key_Escape):
-                self.key_press_escape()
-                return True
-            elif (mods == Qt.ControlModifier) and (key == Qt.Key_F):
-                self.show_search_dialog()
-                return True
-            elif (not mods) and (key == Qt.Key_F3):
-                self.find_next()
-                return True
+            # Ctrl+Enter
+            if mods == Qt.ControlModifier:
+                if key == Qt.Key_Return:
+                    self.key_press_ctrl_enter()
+                    return True
+            # Shift+Enter
+            if mods == Qt.ShiftModifier:
+                if key == Qt.Key_Return:
+                    self.key_press_shift_enter()
+                    return True
+            # Ctrl+Shift+Enter
+            if mods == (Qt.ControlModifier | Qt.ShiftModifier):
+                if key == Qt.Key_Return:
+                    self.key_press_ctrl_shift_enter()
+                    return True
+            # Tab
+            if not mods:
+                if key == Qt.Key_Tab:
+                    self.key_press_tab()
+                    return True
+            # Esc
+            if not mods:
+                if key == Qt.Key_Escape:
+                    self.key_press_escape()
+                    return True
+            # Ctrl+F
+            if mods == Qt.ControlModifier:
+                if key == Qt.Key_F:
+                    self.show_search_dialog()
+                    return True
+            # F3
+            if not mods:
+                if key == Qt.Key_F3:
+                    self.find_next()
+                    return True
         return super().eventFilter(source, event)
     
     def key_press_ctrl_enter(self):
         if self.session_state == SessionState.IDLE:
-            self.generate_response(thinking_enabled=False)
+            self.generate_response(response_mode="normal")
     
     def key_press_shift_enter(self):
         if self.session_state == SessionState.IDLE:
-            self.generate_response(thinking_enabled=True)
+            self.generate_response(response_mode="thinking")
+
+    def key_press_ctrl_shift_enter(self):
+        if self.session_state == SessionState.IDLE:
+            self.generate_response(response_mode="research")
     
     def key_press_tab(self):
         self.text_editor.insertPlainText("    ")
@@ -182,11 +197,14 @@ class Session(QWidget):
                 if self.session_state == SessionState.GENERATING:
                     self.text_editor.insert_at_end("\nUser:\n", self.number_of_trailing_newline_characters)
                 # Flush the text animation, and then reset UI state
-                def _callback():
-                    self.set_read_only(False)
-                    self.set_session_state(SessionState.IDLE)
-                self.text_editor.flush_animation(_callback)
-
+                self.text_editor.flush_animation(self.reset_ui_state)
+    
+    def reset_ui_state(self):
+        # Turn off read-only
+        self.set_read_only(False)
+        # Update session state
+        self.set_session_state(SessionState.IDLE)
+    
     def get_data(self):
         # Note: get_data() should not interfere with session activities
         return {"text_content": self.text_editor.toPlainText()}

@@ -5,6 +5,7 @@ from typing import Callable
 from PySide6.QtWidgets import QTextEdit
 from PySide6.QtCore import Qt, QUrl, QByteArray, QBuffer, QTimer
 from PySide6.QtGui import QFont, QImage, QTextDocument, QTextImageFormat
+from PySide6.QtGui import QColor, QPalette
 from ui.text_editor.syntax_highlighter import SyntaxHighlighter
 from ui.text_editor.animated_insertion_manager import AnimatedInsertionManager
 
@@ -12,8 +13,9 @@ logger = logging.getLogger(__name__)
 
 
 class TextEditor(QTextEdit):
-    def __init__(self, parent):
-        super().__init__(parent)
+    def __init__(self):
+        # Note: TextEditor relies on the self-deletion pattern for clean-up
+        super().__init__(parent=None)
         # Disable rich text support, per the requirements
         self.setAcceptRichText(False)
         # Always show the vertical scrollbar
@@ -24,6 +26,11 @@ class TextEditor(QTextEdit):
         font.setFeature(QFont.Tag("liga"), 0)
         font.setFeature(QFont.Tag("dlig"), 0)
         self.setFont(font)
+        # Set color
+        pal = self.palette()
+        pal.setColor(QPalette.Text, QColor(216, 222, 233))  # Text
+        pal.setColor(QPalette.Base, QColor(48, 56, 65))     # Background
+        self.setPalette(pal)
         # Initialize external modules
         self.highlighter = SyntaxHighlighter(self.document())
         self.animation_manager = AnimatedInsertionManager(self)
