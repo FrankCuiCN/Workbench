@@ -5,6 +5,14 @@ logger = logging.getLogger(__name__)
 
 
 def parse_text(text):
+    """Parse chat logs into a message list for API helpers.
+
+    The text must begin with ``User:`` on the very first line and alternate with
+    ``Assistant:`` labels on their own lines. Each tag is expected exactly as
+    inserted by the UI with no leading or trailing whitespace. If the format is
+    violated the function returns ``None``.
+    """
+
     # Known Issue: Current layout appends a number of newline characters to allow scrolling past the last line
     # Workaround: Strip whitespace characters
     text = text.strip()
@@ -14,9 +22,9 @@ def parse_text(text):
     
     # Identify anchor indices where lines are exactly "User:" or "Assistant:"
     anchor_indices = [idx for idx, line in enumerate(lines) if line == "User:" or line == "Assistant:"]
-    
-    # Validate that the text starts with "User:"
-    if not anchor_indices or lines[anchor_indices[0]] != "User:":
+
+    # Validate that the text starts with "User:" on the first line
+    if not anchor_indices or anchor_indices[0] != 0 or lines[anchor_indices[0]] != "User:":
         # Text must start with "User:"
         logger.debug("parse_text: Text must start with 'User:'")
         return None
