@@ -53,11 +53,10 @@ def get_stream(messages, response_mode):
     contents = translate_messages(messages)
     
     if response_mode == "normal":
-        # Note: For Gemini 2.5 Flash, setting the thinking budget to 0 disables thinking
-        model = "gemini-2.5-flash-preview-05-20"
+        model = "gemini-2.5-pro-preview-06-05"
         config = GenerateContentConfig(
             system_instruction=system_prompt,
-            thinking_config=ThinkingConfig(include_thoughts=True, thinking_budget=0),
+            thinking_config=ThinkingConfig(include_thoughts=True, thinking_budget=128),
         )
     elif response_mode == "thinking":
         model = "gemini-2.5-pro-preview-06-05"
