@@ -4,9 +4,7 @@ from PySide6.QtWidgets import QStatusBar, QLabel
 
 class LocalStatusBar(QStatusBar):
     """Local status bar for individual session status"""
-    
-    def __init__(self, parent=None):
-        """Initialize the local status bar"""
+    def __init__(self, parent):
         super().__init__(parent)
         # Configuration
         self.setSizeGripEnabled(False)

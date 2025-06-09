@@ -4,8 +4,7 @@ from PySide6.QtWidgets import QStatusBar, QLabel
 
 class GlobalStatusBar(QStatusBar):
     """Global status bar for application-wide status"""
-    
-    def __init__(self, parent=None):
+    def __init__(self, parent):
         """Initialize the global status bar"""
         super().__init__(parent)
         # Configuration

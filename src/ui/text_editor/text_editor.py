@@ -13,8 +13,9 @@ logger = logging.getLogger(__name__)
 
 
 class TextEditor(QTextEdit):
-    def __init__(self, parent):
-        super().__init__(parent)
+    def __init__(self):
+        # Note: TextEditor relies on the self-deletion pattern for clean-up
+        super().__init__(parent=None)
         # Disable rich text support, per the requirements
         self.setAcceptRichText(False)
         # Always show the vertical scrollbar

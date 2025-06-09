@@ -20,7 +20,8 @@ class SessionState(Enum):
 class Session(QWidget):
     """A single instance of a text editing session"""
     def __init__(self, parent):
-        super().__init__(parent)
+        # Note: Session relies on the self-deletion pattern for clean-up
+        super().__init__(parent=None)
         # Define attributes
         self.workspace = parent
         self.search_text = ""
@@ -28,7 +29,7 @@ class Session(QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         # Create text editor
-        self.text_editor = TextEditor(self)
+        self.text_editor = TextEditor()
         self.text_editor.insertPlainText("User:\n")
         # Add multiple lines to the end
         # Note: This is a workaround to enable scrolling beyond the last line
@@ -91,7 +92,7 @@ class Session(QWidget):
                 index -= 1
             self.number_of_trailing_newline_characters = trailing_newlines
             # Create a worker
-            self.worker = Worker(self.workspace.backend, messages, response_mode, parent=self)
+            self.worker = Worker(self.workspace.backend, messages, response_mode)
             # Connect the signal
             self.worker.signal.connect(self.on_worker_event)
             # Start the worker

@@ -10,8 +10,11 @@ logger = logging.getLogger(__name__)
 class Worker(QObject):
     signal = Signal(dict)
     
-    def __init__(self, backend, messages, response_mode, parent=None):
-        super().__init__(parent)
+    def __init__(self, backend, messages, response_mode):
+        # Known Issue: Worker gets immediately deleted when its parent is deleted
+        #   This cause errors if the worker logic is still waiting for remote server to respond
+        # Workaround: Worker relies on the self-deletion pattern for clean-up
+        super().__init__(parent=None)
         # Initialize attributes
         self.backend = backend
         self.messages = messages
@@ -23,6 +26,8 @@ class Worker(QObject):
             # Emit initial state
             self.signal.emit({"state": "waiting", "payload": None})
             
+            # Known Issue: The background task can hang if this part never returns
+            #   This would prevent the worker from self-deleting, causing a memory leak
             if self.backend == "anthropic":
                 graceful = utils_anthropic.run(self.messages, self.response_mode, parent=self)
             elif self.backend == "openai":

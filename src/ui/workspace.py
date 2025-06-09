@@ -9,7 +9,8 @@ logger = logging.getLogger(__name__)
 class Workspace(QTabWidget):
     """Workspace for handling multiple sessions."""
     def __init__(self, parent):
-        super().__init__(parent)
+        # Note: Workspace relies on the self-deletion pattern for clean-up
+        super().__init__(parent=None)
         # Define attributes
         self.main_window = parent
         self.closed_sessions = []  # Store recently closed sessions
