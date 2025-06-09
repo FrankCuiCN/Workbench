@@ -48,7 +48,7 @@ def get_stream(messages, response_mode):
         stream = client.messages.stream(
             system=system_prompt,
             messages=messages,
-            model="claude-sonnet-4-20250514",
+            model="claude-opus-4-20250514",
             temperature=1.0,
             max_tokens=32000,
             thinking={"type": "disabled"},
