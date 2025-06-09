@@ -52,28 +52,31 @@ def get_stream(messages, response_mode):
     system_prompt = get_system_prompt()
     contents = translate_messages(messages)
     
-    # Build generation config based on mode
     if response_mode == "normal":
+        # Note: For Gemini 2.5 Flash, setting the thinking budget to 0 disables thinking
+        model = "gemini-2.5-flash-preview-05-20"
         config = GenerateContentConfig(
             system_instruction=system_prompt,
+            thinking_config=ThinkingConfig(include_thoughts=True, thinking_budget=0),
         )
     elif response_mode == "thinking":
+        model = "gemini-2.5-pro-preview-06-05"
         config = GenerateContentConfig(
             system_instruction=system_prompt,
             thinking_config=ThinkingConfig(include_thoughts=True, thinking_budget=32768),
         )
     elif response_mode == "research":
+        model = "gemini-2.5-pro-preview-06-05"
         config = GenerateContentConfig(
             system_instruction=system_prompt,
             thinking_config=ThinkingConfig(include_thoughts=True, thinking_budget=32768),
-            tools=[Tool(google_search=GoogleSearch()), Tool(url_context=UrlContext)],
+            tools=[Tool(url_context=UrlContext()), Tool(google_search=GoogleSearch())],
         )
     else:
         raise Exception("Unexpected response_mode")
     
-    # Initiate the streaming content generation
     stream = client.models.generate_content_stream(
-        model="gemini-2.5-pro-preview-06-05",
+        model=model,
         contents=contents,
         config=config
     )
