@@ -2,9 +2,9 @@ import base64
 import uuid
 import logging
 from typing import Callable
-from PySide6.QtWidgets import QTextEdit
+from PySide6.QtWidgets import QTextEdit, QApplication
 from PySide6.QtCore import Qt, QUrl, QByteArray, QBuffer, QTimer
-from PySide6.QtGui import QFont, QImage, QTextDocument, QTextImageFormat
+from PySide6.QtGui import QFont, QFontDatabase, QImage, QTextDocument, QTextImageFormat
 from PySide6.QtGui import QColor, QPalette
 from ui.text_editor.syntax_highlighter import SyntaxHighlighter
 from ui.text_editor.animated_insertion_manager import AnimatedInsertionManager
@@ -21,10 +21,21 @@ class TextEditor(QTextEdit):
         # Always show the vertical scrollbar
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         # Set custom font
-        font = QFont("Sarasa Mono SC", 12)
-        font.setFeature(QFont.Tag("calt"), 0)  # Disable ligatures
-        font.setFeature(QFont.Tag("liga"), 0)
-        font.setFeature(QFont.Tag("dlig"), 0)
+        db_families = QFontDatabase().families()
+        if "Sarasa Mono SC" in db_families:
+            # Known Issue: "Sarasa Fixed SC" seems to have more jagged edges
+            # Workaround: Use "Sarasa Mono SC" but disable calt (contextual alternates)
+            font = QFont("Sarasa Mono SC", 12)
+            font.setFeature(QFont.Tag("calt"), 0)
+        elif "SF Mono" in db_families:
+            font = QFont("SF Mono", 12)
+        elif "Consolas" in db_families:
+            font = QFont("Consolas", 12)
+        elif "Courier New" in db_families:
+            font = QFont("Courier New", 12)
+        else:
+            font = QApplication.font()
+            font.setPointSize(12)
         self.setFont(font)
         # Set color
         pal = self.palette()
