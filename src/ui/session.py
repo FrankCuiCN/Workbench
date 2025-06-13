@@ -93,11 +93,8 @@ class Session(QWidget):
             self.number_of_trailing_newline_characters = trailing_newlines
             # Create a worker
             self.worker = Worker(self.workspace.backend, messages, response_mode)
-            # Connect signals
+            # Connect to signal
             self.worker.signal.connect(self.on_worker_event)
-            def _on_worker_destruction():
-                logger.debug(f"Worker {id(self.worker)} is being destroyed")
-            self.worker.destroyed.connect(_on_worker_destruction)
             # Start the worker
             self.worker.start()
 
@@ -120,13 +117,16 @@ class Session(QWidget):
             self.text_editor.insert_at_end(payload, self.number_of_trailing_newline_characters)
         # If the worker is ending gracefully
         elif state == "ending":
-            self.worker = None
+            # Clean up and remove the worker
+            self.remove_worker()
+            # Insert the user tag
             self.text_editor.insert_at_end("\nUser:\n", self.number_of_trailing_newline_characters)
             # Flush the text animation, and then reset UI state
             self.text_editor.flush_animation(self.reset_ui_state)
         # If the worker experienced an error
         elif state == "error":
-            self.worker = None
+            # Clean up and remove the worker
+            self.remove_worker()
             # Insert the error message
             self.text_editor.insert_at_end("\n<Error: {}>".format(payload), self.number_of_trailing_newline_characters)
             # Flush the text animation, and then reset UI state
@@ -195,7 +195,8 @@ class Session(QWidget):
             #     So SessionState is not IDLE
             if self.worker:
                 logger.debug("Escape key pressed, halting the worker")
-                self.worker.clean_up_resources()
+                # Clean up and remove the worker
+                self.remove_worker()
                 # If already generating, add the User tag
                 if self.session_state == SessionState.GENERATING:
                     self.text_editor.insert_at_end("\nUser:\n", self.number_of_trailing_newline_characters)
@@ -221,13 +222,17 @@ class Session(QWidget):
         cursor = self.text_editor.textCursor()
         cursor.setPosition(0)
         self.text_editor.setTextCursor(cursor)
-    
+
+    def remove_worker(self):
+        if self.worker:
+            self.worker.clean_up_resources()
+            self.worker = None
+
     def clean_up_resources(self):
         """Clean up any resources used by this session"""
         logger.debug("Cleaning up session resources")
-        # Halt the worker if there is one
-        if self.worker:
-            self.worker.clean_up_resources()
+        # Clean up and remove the worker
+        self.remove_worker()
         # Clean up text editor resources
         self.text_editor.clean_up_resources()
         # Self-deletion
