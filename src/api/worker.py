@@ -50,6 +50,7 @@ class Worker(QObject):
         except Exception as e:
             logger.error(f"Worker exception: {e}")
             self.safe_signal_emit("error", str(e))
+        logger.debug("Exiting the thread")
 
     def safe_signal_emit(self, state, payload):
         # Note: This wrapper ensures that workers requested to stop do not emit signals
@@ -62,7 +63,7 @@ class Worker(QObject):
         thread.start()
 
     def clean_up_resources(self):
-        logger.debug("Worker is requested to stop")
+        logger.debug("Requesting Worker to stop")
         self.stop_requested = True
         # Self-Deletion
         logger.debug("Calling deleteLater on Worker")

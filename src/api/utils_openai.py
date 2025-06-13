@@ -84,8 +84,6 @@ def run(messages, response_mode, parent):
         for event in stream:
             # If stop requested
             if parent.stop_requested:
-                # Update the logger
-                logger.debug("The task is halting")
                 # Exit ungracefully
                 return False
             if event.type == "response.in_progress":
