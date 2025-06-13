@@ -18,15 +18,13 @@ class GlobalStatusBar(QStatusBar):
     
     def update_backend_status(self, backend):
         # Workaround: Add one space to the right
-        # Background: Rare display issues may cut-off 1~2 characters
-        if backend == "default":
-            self.backend_status.setText("Backend: Default (F10) ")
+        # Background: Rare display issues may cut off 1~2 characters
+        if backend == "openai":
+            self.backend_status.setText("Backend: OpenAI (F10) ")
         elif backend == "anthropic":
             self.backend_status.setText("Backend: Anthropic (F10) ")
         elif backend == "gemini":
             self.backend_status.setText("Backend: Gemini (F10) ")
-        elif backend == "openai":
-            self.backend_status.setText("Backend: OpenAI (F10) ")
         else:
             raise Exception("Unexpected API backend")
     

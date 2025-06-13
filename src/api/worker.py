@@ -26,21 +26,12 @@ class Worker(QObject):
             
             # Known Issue: The background task can hang if this part never returns
             #   This would prevent the thread from ending, causing a memory leak
-            if self.backend == "default":
-                if self.response_mode == "normal":
-                    graceful = utils_anthropic.run(self.messages, self.response_mode, parent=self)
-                elif self.response_mode == "thinking":
-                    graceful = utils_gemini.run(self.messages, self.response_mode, parent=self)
-                elif self.response_mode == "advanced":
-                    graceful = utils_anthropic.run(self.messages, self.response_mode, parent=self)
-                else:
-                    raise Exception("Unexpected response_mode")
+            if self.backend == "openai":
+                graceful = utils_openai.run(self.messages, self.response_mode, parent=self)
             elif self.backend == "anthropic":
                 graceful = utils_anthropic.run(self.messages, self.response_mode, parent=self)
             elif self.backend == "gemini":
                 graceful = utils_gemini.run(self.messages, self.response_mode, parent=self)
-            elif self.backend == "openai":
-                graceful = utils_openai.run(self.messages, self.response_mode, parent=self)
             else:
                 raise Exception("Unexpected backend")
             

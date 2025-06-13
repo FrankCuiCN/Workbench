@@ -14,7 +14,7 @@ class Workspace(QTabWidget):
         # Define attributes
         self.main_window = parent
         self.closed_sessions = []  # Store recently closed sessions
-        self.backend = "default"   # Default backend
+        self.backend = "openai"    # Default backend
         # Configuration
         self.setTabsClosable(True)  # Enable close buttons
         self.setMovable(True)       # Allow tabs to be reordered
@@ -127,14 +127,12 @@ class Workspace(QTabWidget):
     def change_api_backend(self):
         """Change API backend for all sessions"""
         # Loop through available backends
-        if self.backend == "default":
+        if self.backend == "openai":
             self.backend = "anthropic"
         elif self.backend == "anthropic":
             self.backend = "gemini"
         elif self.backend == "gemini":
             self.backend = "openai"
-        elif self.backend == "openai":
-            self.backend = "default"
         else:
             raise Exception(f"Unexpected backend: {self.backend}")
         # Update the global status bar

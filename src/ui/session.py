@@ -93,7 +93,7 @@ class Session(QWidget):
             self.number_of_trailing_newline_characters = trailing_newlines
             # Create a worker
             self.worker = Worker(self.workspace.backend, messages, response_mode)
-            # Connect to signal
+            # Connect the signal
             self.worker.signal.connect(self.on_worker_event)
             # Start the worker
             self.worker.start()
