@@ -32,7 +32,7 @@ class Session(QWidget):
         self.text_editor = TextEditor()
         self.text_editor.insertPlainText("User:\n")
         # Add multiple lines to the end
-        # Note: This is a workaround to enable scrolling beyond the last line
+        # Workaround: Enable scrolling past the last line
         cursor_position = self.text_editor.textCursor().position()
         self.text_editor.insertPlainText(20 * "\n")  # Add empty lines
         cursor = self.text_editor.textCursor()  # Get current text cursor
@@ -93,8 +93,11 @@ class Session(QWidget):
             self.number_of_trailing_newline_characters = trailing_newlines
             # Create a worker
             self.worker = Worker(self.workspace.backend, messages, response_mode)
-            # Connect the signal
+            # Connect signals
             self.worker.signal.connect(self.on_worker_event)
+            def _on_worker_destruction():
+                logger.debug(f"Worker {id(self.worker)} is being destroyed")
+            self.worker.destroyed.connect(_on_worker_destruction)
             # Start the worker
             self.worker.start()
 
@@ -192,7 +195,7 @@ class Session(QWidget):
             #     So SessionState is not IDLE
             if self.worker:
                 logger.debug("Escape key pressed, halting the worker")
-                self.worker.request_stop()  # Note: Worker performs self-deletion automatically
+                self.worker.clean_up_resources()
                 # If already generating, add the User tag
                 if self.session_state == SessionState.GENERATING:
                     self.text_editor.insert_at_end("\nUser:\n", self.number_of_trailing_newline_characters)
@@ -222,9 +225,9 @@ class Session(QWidget):
     def clean_up_resources(self):
         """Clean up any resources used by this session"""
         logger.debug("Cleaning up session resources")
-        # Halt the worker if active
+        # Halt the worker if there is one
         if self.worker:
-            self.worker.request_stop()  # Note: Worker performs self-deletion automatically
+            self.worker.clean_up_resources()
         # Clean up text editor resources
         self.text_editor.clean_up_resources()
         # Self-deletion
