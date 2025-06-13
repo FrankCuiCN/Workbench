@@ -11,9 +11,7 @@ class Worker(QObject):
     signal = Signal(dict)
     
     def __init__(self, backend, messages, response_mode):
-        # Known Issue: Worker gets immediately deleted when its parent is deleted
-        #   This cause errors if the worker logic is still waiting for remote server to respond
-        # Workaround: Worker relies on the self-deletion pattern for clean-up
+        # Note: Worker relies on the self-deletion pattern for clean-up
         super().__init__(parent=None)
         # Initialize attributes
         self.backend = backend
@@ -24,7 +22,7 @@ class Worker(QObject):
     def _background_task(self):
         try:
             # Emit initial state
-            self.signal.emit({"state": "waiting", "payload": None})
+            self.safe_signal_emit("waiting", None)
             
             # Known Issue: The background task can hang if this part never returns
             #   This would prevent the worker from self-deleting, causing a memory leak
@@ -48,23 +46,24 @@ class Worker(QObject):
             
             # Note: "ending" implies a graceful exit
             if graceful:
-                self.signal.emit({"state": "ending", "payload": None})
+                self.safe_signal_emit("ending", None)
         except Exception as e:
             logger.error(f"Worker exception: {e}")
-            self.signal.emit({"state": "error", "payload": str(e)})
+            self.safe_signal_emit("error", str(e))
 
-    
-    def _background_task_with_cleanup(self):
-        self._background_task()
-        # Self-Deletion
-        logger.debug("Calling deleteLater on Worker")
-        self.deleteLater()
+    def safe_signal_emit(self, state, payload):
+        # Note: This wrapper ensures that workers requested to stop do not emit signals
+        if not self.stop_requested:
+            self.signal.emit({"state": state, "payload": payload})
 
     def start(self):
-        thread = threading.Thread(target=self._background_task_with_cleanup)
+        thread = threading.Thread(target=self._background_task)
         thread.daemon = True
         thread.start()
 
-    def request_stop(self):
-        logger.debug("The task is requested to stop")
+    def clean_up_resources(self):
+        logger.debug(f"Worker {id(self)} is requested to stop")
         self.stop_requested = True
+        # Self-Deletion
+        logger.debug(f"Calling deleteLater on Worker {id(self)}")
+        self.deleteLater()

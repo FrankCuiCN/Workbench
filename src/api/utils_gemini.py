@@ -106,9 +106,9 @@ def run(messages, response_mode, parent):
         # Python's short-circuiting ensures the second getattr is not called on None.
         if part and getattr(part, "thought", False):
             # Known Issue: This part is not invoked
-            parent.signal.emit({"state": "thinking", "payload": text_event})
+            parent.safe_signal_emit("thinking", None)
         else:
             # If no thought metadata is available, default to the "generating" state.
-            parent.signal.emit({"state": "generating", "payload": text_event})
+            parent.safe_signal_emit("generating", text_event)
     # Exit gracefully
     return True

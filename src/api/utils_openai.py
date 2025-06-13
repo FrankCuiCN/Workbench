@@ -89,8 +89,8 @@ def run(messages, response_mode, parent):
                 # Exit ungracefully
                 return False
             if event.type == "response.in_progress":
-                parent.signal.emit({"state": "thinking", "payload": None})
+                parent.safe_signal_emit("thinking", None)
             if event.type == "response.output_text.delta":
-                parent.signal.emit({"state": "generating", "payload": event.delta})
+                parent.safe_signal_emit("generating", event.delta)
     # Exit gracefully
     return True
