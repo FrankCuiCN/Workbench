@@ -33,7 +33,7 @@ class Worker(QObject):
                     graceful = utils_anthropic.run(self.messages, self.response_mode, parent=self)
                 elif self.response_mode == "thinking":
                     graceful = utils_gemini.run(self.messages, self.response_mode, parent=self)
-                elif self.response_mode == "research":
+                elif self.response_mode == "advanced":
                     graceful = utils_anthropic.run(self.messages, self.response_mode, parent=self)
                 else:
                     raise Exception("Unexpected response_mode")

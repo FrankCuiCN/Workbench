@@ -181,7 +181,7 @@ class Session(QWidget):
 
     def key_press_ctrl_shift_enter(self):
         if self.session_state == SessionState.IDLE:
-            self.generate_response(response_mode="research")
+            self.generate_response(response_mode="advanced")
     
     def key_press_tab(self):
         self.text_editor.insertPlainText("    ")

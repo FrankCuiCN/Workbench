@@ -16,7 +16,7 @@ class LocalStatusBar(QStatusBar):
         
     def update_session_status(self, status):
         if status == "idle":
-            status_text = "Idle        |  Ctrl+Enter: Fast Reply  |  Shift+Enter: Think More  |  Ctrl+Shift+Enter: Online Research"
+            status_text = "Idle        |  Ctrl+Enter: Fast Reply  |  Shift+Enter: Think More  |  Ctrl+Shift+Enter: Advanced"
         elif status == "waiting":
             status_text = "Waiting     |  Press Esc to interrupt"
         elif status == "thinking":

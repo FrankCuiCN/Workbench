@@ -64,7 +64,7 @@ def get_stream(messages, response_mode):
             thinking={"type": "enabled", "budget_tokens": 31999},
         )
         return stream
-    elif response_mode == "research":
+    elif response_mode == "advanced":
         tools = [{
             "type": "web_search_20250305",
             "name": "web_search",

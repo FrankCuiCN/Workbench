@@ -64,7 +64,7 @@ def get_stream(messages, response_mode):
             store=False,
         )
         return stream
-    elif response_mode == "research":
+    elif response_mode == "advanced":
         stream = client.responses.create(
             input=messages,
             model="o3-pro",

@@ -64,7 +64,7 @@ def get_stream(messages, response_mode):
             system_instruction=system_prompt,
             thinking_config=ThinkingConfig(include_thoughts=True, thinking_budget=32768),
         )
-    elif response_mode == "research":
+    elif response_mode == "advanced":
         model = "gemini-2.5-pro-preview-06-05"
         config = GenerateContentConfig(
             system_instruction=system_prompt,
