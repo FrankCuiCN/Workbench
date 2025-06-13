@@ -25,7 +25,7 @@ class Worker(QObject):
             self.safe_signal_emit("waiting", None)
             
             # Known Issue: The background task can hang if this part never returns
-            #   This would prevent the worker from self-deleting, causing a memory leak
+            #   This would prevent the thread from ending, causing a memory leak
             if self.backend == "default":
                 if self.response_mode == "normal":
                     graceful = utils_anthropic.run(self.messages, self.response_mode, parent=self)
@@ -62,8 +62,8 @@ class Worker(QObject):
         thread.start()
 
     def clean_up_resources(self):
-        logger.debug(f"Worker {id(self)} is requested to stop")
+        logger.debug("Worker is requested to stop")
         self.stop_requested = True
         # Self-Deletion
-        logger.debug(f"Calling deleteLater on Worker {id(self)}")
+        logger.debug("Calling deleteLater on Worker")
         self.deleteLater()
