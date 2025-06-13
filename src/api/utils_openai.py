@@ -1,6 +1,7 @@
 import os
 import logging
 from openai import OpenAI
+from openai.types.shared_params import Reasoning
 from system_prompt.get_system_prompt import get_system_prompt
 
 logger = logging.getLogger(__name__)
@@ -44,38 +45,34 @@ def get_stream(messages, response_mode):
     
     if response_mode == "normal":
         stream = client.responses.create(
+            input=messages,
             model="gpt-4.1",
             instructions=system_prompt,
-            input=messages,
             stream=True,
+            temperature=1.0,
             store=False,
         )
         return stream
     elif response_mode == "thinking":
         stream = client.responses.create(
+            input=messages,
             model="o3",
             instructions=system_prompt,
-            input=messages,
+            reasoning=Reasoning(effort="high", summary="detailed"),
             stream=True,
-            reasoning={"effort": "high", "summary": "detailed"},
+            temperature=1.0,
             store=False,
         )
         return stream
     elif response_mode == "research":
         stream = client.responses.create(
-            model="gpt-4.1",
-            instructions=system_prompt,
             input=messages,
+            model="o3-pro",
+            instructions=system_prompt,
+            reasoning=Reasoning(effort="high", summary="detailed"),
             stream=True,
+            temperature=1.0,
             store=False,
-            tools=[{
-                "type": "web_search_preview",
-                "search_context_size": "high",
-                "user_location": {
-                    "type": "approximate",
-                    "country": "US",
-                },
-            }],
         )
         return stream
     else:
@@ -91,14 +88,9 @@ def run(messages, response_mode, parent):
                 logger.debug("The task is halting")
                 # Exit ungracefully
                 return False
-
-            # Debug: refusal is not being handled
-            
-            if event.type == "response.reasoning_summary_text.delta":
+            if event.type == "response.in_progress":
                 parent.signal.emit({"state": "thinking", "payload": None})
-            
             if event.type == "response.output_text.delta":
                 parent.signal.emit({"state": "generating", "payload": event.delta})
-
     # Exit gracefully
     return True
