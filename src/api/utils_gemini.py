@@ -8,7 +8,10 @@ from google.genai.types import Tool, GoogleSearch, UrlContext
 from system_prompt.get_system_prompt import get_system_prompt
 
 logger = logging.getLogger(__name__)
-client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
+if "GEMINI_API_KEY" in os.environ:
+    client = genai.Client(api_key=os.environ.get("GEMINI_API_KEY"))
+else:
+    client = None
 
 
 def translate_messages(messages):

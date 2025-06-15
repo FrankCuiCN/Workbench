@@ -4,7 +4,10 @@ import anthropic
 from system_prompt.get_system_prompt import get_system_prompt
 
 logger = logging.getLogger(__name__)
-client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+if "ANTHROPIC_API_KEY" in os.environ:
+    client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+else:
+    client = None
 
 
 # Known Issue: Large Text Block Cache Invalidation

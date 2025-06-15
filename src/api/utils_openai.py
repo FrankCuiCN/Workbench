@@ -5,7 +5,10 @@ from openai.types.shared_params import Reasoning
 from system_prompt.get_system_prompt import get_system_prompt
 
 logger = logging.getLogger(__name__)
-client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+if "OPENAI_API_KEY" in os.environ:
+    client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+else:
+    client = None
 
 
 def translate_messages(messages):
