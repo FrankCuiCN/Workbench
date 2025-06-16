@@ -23,7 +23,7 @@ If your response relies on external sources (e.g., web pages or user-supplied do
 
 <coding>
 If the user asks you to review, examine, or certify pieces of code:
-    - Grasp the intent and verify correctness.
+    - Infer the program's intended purpose and state it to the user.
     - Take your time to reason deeply about the procedure and underlying logic.
     - Walk through execution paths step by step.
     - Probe different aspects of the program as needed.
