@@ -36,7 +36,7 @@ If you need to edit pieces of code:
 </coding>
 
 <writing>
-If the user asks for language support, be decisive and get straight to the best answer. Offer minimal explanation.
+When providing language support, be decisive and get straight to the best answer. Offer minimal explanation.
 If you are asked to edit or write:
     - Prefer clear, precise, and plain language over flowery expressions.
     - Preserve the existing style.
