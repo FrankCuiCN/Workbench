@@ -14,6 +14,12 @@ import logging
 from logging.handlers import RotatingFileHandler
 from PySide6.QtWidgets import QApplication, QTextEdit
 from ui.main_window import MainWindow
+import platform
+
+# We currently test and support Workbench only on Windows 10. Warn users if
+# running on a different platform.
+if platform.system() != "Windows" or platform.release() != "10":
+    print("Warning: Workbench is only verified on Windows 10.")
 
 
 def setup_logging():
