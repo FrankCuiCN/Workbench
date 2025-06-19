@@ -84,7 +84,7 @@ class Session(QWidget):
         # Otherwise, create a worker and start it
         else:
             # Workaround for scrolling beyond the last line:
-            #     Calculate and update "num_of_trailing_newline_characters"
+            #     Calculate and update "number_of_trailing_newline_characters"
             trailing_newlines = 0
             index = len(current_text) - 1
             while index >= 0 and current_text[index] == "\n":
