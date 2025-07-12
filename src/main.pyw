@@ -51,7 +51,8 @@ def main():
     app = QApplication(sys.argv)
     # Set application-wide attributes
     app.setApplicationName("Workbench")
-    # Workaround: Warm up to hide the initial lag when inserting the first emoji
+    # Known Issue: The first emoji inputted to QTextEdit causes a lag
+    # Workaround: Warm up to hide the initial lag
     text_edit = QTextEdit()
     text_edit.fontMetrics().boundingRect("🙂")
     text_edit.deleteLater()  # Self-Deletion
