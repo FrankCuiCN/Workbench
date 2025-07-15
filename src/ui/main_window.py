@@ -129,7 +129,6 @@ class MainWindow(QMainWindow):
             #   This might be due to brief timing-related or OS-level focus-stealing protection.
             # Workaround: Detect such failures and reopen the window
             # Assumption: We can reliably and programmatically detect it when such failure happens
-            # Consider: We can potentially add a 5ms delay between each retry
             for idx_retry in range(5):
                 # Issue: Showing the window on Windows 11 sometimes flickers brightly
                 # Workaround: Use the following procedure:
@@ -166,6 +165,7 @@ class MainWindow(QMainWindow):
             logger.debug("Show window: not in tray; hide, delay, then show")
             self.hide_window()
             # Workaround: To accommodate moving between virtual desktops on Win11
+            # BUG: In this case, if the user immediately hit Alt+U, the window will not be eventually closed
             QTimer.singleShot(100, _show_window)
 
     def hide_window(self):
