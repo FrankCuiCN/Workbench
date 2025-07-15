@@ -123,19 +123,41 @@ class MainWindow(QMainWindow):
 
     def show_window(self):
         def _show_window():
-            # Workaround: To prevent flicker when showing the window on Win 11
-            # Procedure:
-            #   (1) Add the 'minimized' state to the window
-            #   (2) Show the window (when it's minimized, no flicker appears)
-            #   (3) Remove the 'minimized' state to restore the window
-            # Why this works:
-            #   (1) Directly rendering the window causes a flicker on Windows 11
-            #   (2) Rendering it in the taskbar (minimized) avoids the flicker
-            #   (3) Restoring the window from minimized state is flicker-free
-            self.setWindowState(self.windowState() | Qt.WindowMinimized)
-            self.show()
-            self.setWindowState(self.windowState() & ~Qt.WindowMinimized)
-            self.activateWindow()
+            # Issue: In Windows 11, when attempting to restore the PyQt application window (with Alt+O), occasionally
+            #   the window does not come directly to the foreground. Instead, the app icon flashes yellow in
+            #   the taskbar, potentially indicating the focus request was blocked by the operating system.
+            #   This might be due to brief timing-related or OS-level focus-stealing protection.
+            # Workaround: Detect such failures and reopen the window
+            # Assumption: We can reliably and programmatically detect it when such failure happens
+            # Consider: We can potentially add a 5ms delay between each retry
+            for idx_retry in range(5):
+                # Issue: Showing the window on Windows 11 sometimes flickers brightly
+                # Workaround: Use the following procedure:
+                #   (1) Add the "minimized" state to the window
+                #   (2) Show the window (when it's minimized, no flicker appears)
+                #   (3) Remove the "minimized" state to restore the window
+                # Why this works:
+                #   (1) Directly rendering the window causes a flicker on Windows 11
+                #   (2) Rendering it in the taskbar (minimized) avoids the flicker
+                #   (3) Restoring the window from minimized state is flicker-free
+                self.setWindowState(self.windowState() | Qt.WindowMinimized)
+                self.show()
+                self.setWindowState(self.windowState() & ~Qt.WindowMinimized)
+                self.activateWindow()
+
+                # Attempt to capture window open failure
+                indicator_1 = self.isActiveWindow()
+                indicator_2 = self.isVisible()
+                indicator_3 = not bool(self.windowState() & Qt.WindowMinimized) # window is no longer minimized
+                if indicator_1 and indicator_2 and indicator_3:
+                    break
+                else:
+                    logger.debug("Unexpected behavior: Window did not become visible.")
+                    logger.debug("indicator 1: {}".format(indicator_1))
+                    logger.debug("indicator 2: {}".format(indicator_2))
+                    logger.debug("indicator 3: {}".format(indicator_3))
+                    # Hide the window and try again
+                    self.hide()
             self.is_in_tray = False
         if self.is_in_tray:
             logger.debug("Show window: already in tray, will show window")
