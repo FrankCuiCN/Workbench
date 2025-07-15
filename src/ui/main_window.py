@@ -123,50 +123,53 @@ class MainWindow(QMainWindow):
 
     def show_window(self):
         def _show_window():
+            # Issue: Showing the window on Windows 11 sometimes flickers brightly
+            # Workaround: Use the following procedure:
+            #   (1) Add the "minimized" state to the window
+            #   (2) Show the window (when it's minimized, no flicker appears)
+            #   (3) Remove the "minimized" state to restore the window
+            # Why this works:
+            #   (1) Directly rendering the window causes a flicker on Windows 11
+            #   (2) Rendering it in the taskbar (minimized) avoids the flicker
+            #   (3) Restoring the window from minimized state is flicker-free
+            self.setWindowState(self.windowState() | Qt.WindowMinimized)
+            self.show()
+            self.setWindowState(self.windowState() & ~Qt.WindowMinimized)
+            self.activateWindow()
+            self.is_in_tray = False
+
+        def _show_window_gaurenteed():
             # Issue: In Windows 11, when attempting to restore the PyQt application window (with Alt+O), occasionally
             #   the window does not come directly to the foreground. Instead, the app icon flashes yellow in
             #   the taskbar, potentially indicating the focus request was blocked by the operating system.
             #   This might be due to brief timing-related or OS-level focus-stealing protection.
             # Workaround: Detect such failures and reopen the window
             # Assumption: We can reliably and programmatically detect it when such failure happens
-            for idx_retry in range(5):
-                # Issue: Showing the window on Windows 11 sometimes flickers brightly
-                # Workaround: Use the following procedure:
-                #   (1) Add the "minimized" state to the window
-                #   (2) Show the window (when it's minimized, no flicker appears)
-                #   (3) Remove the "minimized" state to restore the window
-                # Why this works:
-                #   (1) Directly rendering the window causes a flicker on Windows 11
-                #   (2) Rendering it in the taskbar (minimized) avoids the flicker
-                #   (3) Restoring the window from minimized state is flicker-free
-                self.setWindowState(self.windowState() | Qt.WindowMinimized)
-                self.show()
-                self.setWindowState(self.windowState() & ~Qt.WindowMinimized)
-                self.activateWindow()
+            # Step 1: Attempt to open the window
+            _show_window()
+            # Step 2: Attempt to detect success
+            indicator_1 = self.isActiveWindow()  # Note: Indicator 1 is effective at detecting the failure
+            indicator_2 = self.isVisible()
+            if indicator_1 and indicator_2:  # Success
+                return
+            # Step 3: If not successful, hide the window to tray and try again 100ms later
+            # Debug: Currently only one retry; Consider allowing up to 5 attempts
+            logger.debug("Unexpected behavior: Window did not become visible.")
+            logger.debug("indicator 1: {}".format(indicator_1))
+            logger.debug("indicator 2: {}".format(indicator_2))
+            self.hide_window()
+            QTimer.singleShot(100, _show_window)
 
-                # Attempt to capture window open failure
-                indicator_1 = self.isActiveWindow()
-                indicator_2 = self.isVisible()
-                indicator_3 = not bool(self.windowState() & Qt.WindowMinimized) # window is no longer minimized
-                if indicator_1 and indicator_2 and indicator_3:
-                    break
-                else:
-                    logger.debug("Unexpected behavior: Window did not become visible.")
-                    logger.debug("indicator 1: {}".format(indicator_1))
-                    logger.debug("indicator 2: {}".format(indicator_2))
-                    logger.debug("indicator 3: {}".format(indicator_3))
-                    # Hide the window and try again
-                    self.hide()
-            self.is_in_tray = False
         if self.is_in_tray:
             logger.debug("Show window: already in tray, will show window")
-            _show_window()
+            _show_window_gaurenteed()
         else:
             logger.debug("Show window: not in tray; hide, delay, then show")
-            self.hide_window()
             # Workaround: To accommodate moving between virtual desktops on Win11
-            # BUG: In this case, if the user immediately hit Alt+U, the window will not be eventually closed
-            QTimer.singleShot(100, _show_window)
+            self.hide_window()
+            # BUG: A caveat: In this case, if the user immediately hit Alt+U, the window will not be eventually closed
+            #   To replicate: Make sure the window is visible; Quickly hit Alt+O then Alt+U
+            QTimer.singleShot(100, _show_window_gaurenteed)
 
     def hide_window(self):
         """Hide window to system tray if not already hidden."""
