@@ -1,5 +1,5 @@
 # Workbench
-A convenient interface for interacting with Language Models and Reasoner Models.
+A convenient interface for interacting with language models and reasoner models.
 
 ## Requirements
 Ensure you have valid API keys set in your environment for the following services:
