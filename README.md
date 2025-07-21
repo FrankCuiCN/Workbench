@@ -1,11 +1,25 @@
 # Workbench
 A convenient interface for interacting with language models and reasoner models.
 
-## Requirements
-Ensure you have valid API keys set in your environment for the following services:
-- Anthropic (`ANTHROPIC_API_KEY`)
-- OpenAI (`OPENAI_API_KEY`)
-- Gemini (`GEMINI_API_KEY`)
+## System Requirements
+```
+Tested on:
+- Windows 11
+- Python 3.12.9
+```
+
+## Installing Dependencies:
+Step 1: Set the following environment variables with valid API keys:
+```
+- ANTHROPIC_API_KEY  (Anthropic)
+- OPENAI_API_KEY     (OpenAI)
+- GEMINI_API_KEY     (Google Gemini)
+```
+
+Step 2: Run the following command:
+```
+pip install PySide6==6.9.1 pywin32==311 openai==1.97.0 anthropic==0.58.2 google-genai==1.26.0
+```
 
 ## Disclaimer
 - Please note that our tool functions solely as a user interface for accessing third-party AI API services. While we do our best to provide a reliable experience, we are not responsible or liable for users' actions, decisions, or consequences resulting from interactions with these APIs.
