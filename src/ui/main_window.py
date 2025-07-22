@@ -148,7 +148,8 @@ class MainWindow(QMainWindow):
             # Step 1: Attempt to open the window
             _show_window()
             # Step 2: Attempt to detect success
-            indicator_1 = self.isActiveWindow()  # Note: Indicator 1 is effective at detecting the failure
+            # Note: We find "indicator 1" effective at detecting the failure
+            indicator_1 = self.isActiveWindow()
             indicator_2 = self.isVisible()
             if indicator_1 and indicator_2:  # Success
                 return
@@ -158,7 +159,8 @@ class MainWindow(QMainWindow):
             logger.debug("indicator 1: {}".format(indicator_1))
             logger.debug("indicator 2: {}".format(indicator_2))
             self.hide_window()
-            QTimer.singleShot(100, _show_window)
+            _show_window()
+            # QTimer.singleShot(10, _show_window)
 
         if self.is_in_tray:
             logger.debug("Show window: already in tray, will show window")
