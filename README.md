@@ -1,5 +1,5 @@
 # Workbench
-A convenient interface for interacting with language models and reasoner models.
+A text editor that talks to language and reasoning models.
 
 ## System Requirements
 ```
